@@ -6,6 +6,9 @@ const RetrieveServiceMiddleware = require('./retrieveService.middleware');
 const mock = require('./authenticator.mock');
 
 const jwt = require('jsonwebtoken');
+const redis = require('redis');
+
+const day_in_ms = 864000000;
 
 class AuthenticatorService extends MicroService {
     constructor(settings = {}) {
@@ -17,10 +20,57 @@ class AuthenticatorService extends MicroService {
         this.app.post('/logout', RetrieveServiceMiddleware, this.onLogout.bind(this));
         this.app.get('/token', RetrieveServiceMiddleware, this.generateNewAccessToken.bind(this));
 
-        this.refreshTokens = [];
+        this.redis = redis.createClient({
+           port: settings.REDIS_PORT || process.env.REDIS_PORT, 
+           host: settings.REDIS_HOST || process.env.REDIS_HOST, 
+           password: settings.REDIS_PASSWORD || process.env.REDIS_PASSWORD 
+        });
     }
 
-    generateNewAccessToken(request, response) {
+    hasRefreshToken(refreshToken) {
+        return new Promise((resolve, reject) => {
+            this.redis.get(refreshToken, (err, value) => {
+                if (err) {
+                    reject(err);
+                }
+
+                else {
+                    resolve(value === '1');
+                }
+            });
+        });
+    }
+
+    storeRefreshToken(refreshToken) {
+        return new Promise((resolve, reject) => {
+            this.redis.set(refreshToken, '1', 'PX', day_in_ms, (err, value) => {
+                if (err) {
+                    reject(err);
+                }
+
+                else {
+                    console.log(value);
+                    resolve(value === '1');
+                }
+            });
+        });
+    }
+
+    deleteRefreshToken(refreshToken) {
+        return new Promise((resolve, reject) => {
+            this.redis.del(refreshToken, err => {
+                if (err) {
+                    reject(err);
+                }
+
+                else {
+                    resolve();
+                }
+            });
+        });
+    }
+
+    async generateNewAccessToken(request, response) {
         const service = request.service;
         const refresh = this.getCookie(request, service.COOKIE_JWT_REFRESH_NAME);
         
@@ -28,7 +78,7 @@ class AuthenticatorService extends MicroService {
             return response.sendStatus(401);
         }
     
-        if (this.refreshTokens.includes(refresh)) {
+        if (await this.hasRefreshToken(refresh)) {
             return response.sendStatus(403);
         }
     
@@ -78,11 +128,11 @@ class AuthenticatorService extends MicroService {
         }
     }
 
-    onLogout(request, response) {
+    async onLogout(request, response) {
         const service = request.service;
         const access = this.getCookie(request, service.COOKIE_JWT_REFRESH_NAME);
         if (access !== null) {
-            this.refreshTokens = this.refreshTokens.filter(token => access !== token);
+            await this.deleteRefreshToken(access);    
         }
 
         response.clearCookie(service.COOKIE_JWT_ACCESS_NAME);
@@ -110,7 +160,7 @@ class AuthenticatorService extends MicroService {
 
             const refreshToken = jwt.sign(userData, service.JWT_SECRET_REFRESHTOKEN);
     
-            this.refreshTokens.push(refreshToken);
+            this.storeRefreshToken(refreshToken);
            
             this.setJWTAccess(response, service, accessToken, false);
             this.setJWTRefresh(response, service, refreshToken);
