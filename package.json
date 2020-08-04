@@ -12,6 +12,7 @@
     "express": "^4.17.1",
     "helmet": "^4.0.0",
     "jsonwebtoken": "^8.5.1",
+    "mariadb": "^2.4.2",
     "redis": "^3.0.2",
     "sha256": "^0.2.0"
   },

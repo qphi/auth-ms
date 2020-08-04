@@ -9,6 +9,10 @@ module.exports = (request, response, next) => {
     }
 
     else {
+        if (typeof service.name === 'undefined') {
+            service.name = app;
+        }
+        
         request.service = service;
         next();
     }

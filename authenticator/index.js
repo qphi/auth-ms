@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken');
 const redis = require('redis');
 
 const day_in_ms = 864000000;
+const mariadb = require('mariadb');
 
 class AuthenticatorService extends MicroService {
     constructor(settings = {}) {
@@ -24,6 +25,13 @@ class AuthenticatorService extends MicroService {
            port: settings.REDIS_PORT || process.env.REDIS_PORT, 
            host: settings.REDIS_HOST || process.env.REDIS_HOST, 
            password: settings.REDIS_PASSWORD || process.env.REDIS_PASSWORD 
+        });
+
+        this.mariadb = mariadb.createPool({
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            connectionLimit: 5
         });
     }
 
@@ -143,13 +151,34 @@ class AuthenticatorService extends MicroService {
 
 
 
-    onLogin(request, response) {
+    async onLogin(request, response) {
         const service = request.service;
         // Read username and password from request body
         const { username, password } = request.body;
     
         // Filter user from the users array by username and password
-        const user = mock.users.find(u => { return u.username === username && u.password === password });
+        //const user = mock.users.find(u => { return u.username === username && u.password === password });
+        let connexion = null;
+        try {
+            connexion = await this.mariadb.getConnection();
+        
+        
+        }
+
+        catch(error) {
+            console.error(error);
+            console.log('before query')
+            response.send(500);
+            return;
+        }
+
+       
+        const user = connexion.query(`SELECT * FROM ${service.name} WHERE email = ? AND password = ?`, [
+            sha256(username),
+            sha256(password)
+        ]);
+
+        console.log('user', user);
      
         if (user) {
             // Generate an access token
