@@ -1,6 +1,7 @@
 module.exports =  {
     servicesRecorded: {
         'books': {
+            DB_TYPE: 'mysql',
             JWT_ACCESS_TTL: 180000,
             JWT_SECRET_ACCESSTOKEN: 'bd715a978b0d2caa370a925755f83a20bc68572279e7f93d9bec79c8904ef12f',
             JWT_SECRET_REFRESHTOKEN: "b4153dedfdbd22b188689f3bac33461679269b1770f522c269563fd6d5c17da2",
@@ -10,6 +11,8 @@ module.exports =  {
         },
 
         'test-2': {
+            DB_TYPE: 'mysql',
+
             JWT_ACCESS_TTL: 180000,
             JWT_SECRET_ACCESSTOKEN: '84142917fb920fd28c1fee0cb004cc24cf0c61d883a6184174837acc913a9809',
             JWT_SECRET_REFRESHTOKEN: 'caf0b212b7f2cab81dbcaf685d98012eb881115b65cf7276b992cbac598265ef', 

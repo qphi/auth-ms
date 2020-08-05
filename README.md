@@ -2,17 +2,22 @@
 Actually, we use mock in order to simulate client application. 
 In the future, application using AuthWS should use a `.env` file like following and send theses data to AuthWS (probably via a private DB)
 
-<<<<<<< HEAD
-`txt
-=======
-```txt
->>>>>>> f04772cdfa0673946d0280f0408c5c479d508e9e
+```
 NODE_ENV=development
 PORT=8626
 
-JWT_ACCESS_TTL= 180000 # 3 min
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+REDIS_PASSWORD=<PASSWORD>
 
+DB_HOST=localhost
+DB_USER=auth_ms_user
+DB_NAME=auth_ms_db
+DB_PASSWORD=<PASSWORD>
+
+JWT_ACCESS_TTL= 180000 # 3 min
 JWT_SECRET_ACCESSTOKEN=bd715a978b0d2caa370a925755f83a20bc68572279e7f93d9bec79c8904ef12f #hash('sha256', "jwt-qp-access-token")
+
 JWT_SECRET_REFRESHTOKEN=b4153dedfdbd22b188689f3bac33461679269b1770f522c269563fd6d5c17da2 #hash('sha256', "jwt-qp-refresh-token")
 
 #Obfuscation: if you cant read the name of my cookie, it's harder to steal my jwt

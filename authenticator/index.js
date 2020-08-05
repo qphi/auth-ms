@@ -1,7 +1,10 @@
 //@see https://stackabuse.com/authentication-and-authorization-with-jwts-in-express-js/
 // https://medium.com/the-node-js-collection/making-your-node-js-work-everywhere-with-environment-variables-2da8cdf6e786
 const MicroService = require('../src/microservice.model');
+const DBService = require('../services/db.service');
+
 const RetrieveServiceMiddleware = require('./retrieveService.middleware');
+const RetrieveUserMiddleware = require('./retrieveUser.middleware');
 
 const mock = require('./authenticator.mock');
 
@@ -9,17 +12,37 @@ const jwt = require('jsonwebtoken');
 const redis = require('redis');
 
 const day_in_ms = 864000000;
-const mariadb = require('mariadb');
+// const mariadb = require('mariadb');
+// const sha256 = require('sha256');
 
 class AuthenticatorService extends MicroService {
     constructor(settings = {}) {
         super(settings);
 
-        this.app.post('/login', RetrieveServiceMiddleware, this.onLogin.bind(this));
+        this.app.post(
+            '/login', 
+
+            [
+                RetrieveServiceMiddleware,
+                RetrieveUserMiddleware
+            ],
+            
+            this.onLogin.bind(this)
+        );
+        
         // https://stackoverflow.com/questions/3521290/logout-get-or-post#:~:text=The%20post%20should%20be%20used,page%20with%20a%20logout%20GET).
         // https://softwareengineering.stackexchange.com/questions/196871/what-http-verb-should-the-route-to-log-out-of-your-web-app-be
-        this.app.post('/logout', RetrieveServiceMiddleware, this.onLogout.bind(this));
-        this.app.get('/token', RetrieveServiceMiddleware, this.generateNewAccessToken.bind(this));
+        this.app.post(
+            '/logout', 
+            RetrieveServiceMiddleware, 
+            this.onLogout.bind(this)
+        );
+        
+        this.app.get(
+            '/token', 
+            RetrieveServiceMiddleware, 
+            this.generateNewAccessToken.bind(this)
+        );
 
         this.redis = redis.createClient({
            port: settings.REDIS_PORT || process.env.REDIS_PORT, 
@@ -27,12 +50,7 @@ class AuthenticatorService extends MicroService {
            password: settings.REDIS_PASSWORD || process.env.REDIS_PASSWORD 
         });
 
-        this.mariadb = mariadb.createPool({
-            host: process.env.DB_HOST,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            connectionLimit: 5
-        });
+        this.dbService = new DBService(mock.service);
     }
 
     hasRefreshToken(refreshToken) {
@@ -57,7 +75,6 @@ class AuthenticatorService extends MicroService {
                 }
 
                 else {
-                    console.log(value);
                     resolve(value === '1');
                 }
             });
@@ -136,7 +153,7 @@ class AuthenticatorService extends MicroService {
         }
     }
 
-    async onLogout(request, response) {
+    async clearJWT(request, response) {
         const service = request.service;
         const access = this.getCookie(request, service.COOKIE_JWT_REFRESH_NAME);
         if (access !== null) {
@@ -145,7 +162,10 @@ class AuthenticatorService extends MicroService {
 
         response.clearCookie(service.COOKIE_JWT_ACCESS_NAME);
         response.clearCookie(service.COOKIE_JWT_REFRESH_NAME);
+    }
 
+    async onLogout(request, response) {
+        await this.clearJWT(request, response);
         response.send("Logout successful");
     }
 
@@ -154,33 +174,13 @@ class AuthenticatorService extends MicroService {
     async onLogin(request, response) {
         const service = request.service;
         // Read username and password from request body
-        const { username, password } = request.body;
+        const { email, password } = request.user;
+        const user = await this.dbService.findUser(email, password, service);
     
         // Filter user from the users array by username and password
         //const user = mock.users.find(u => { return u.username === username && u.password === password });
-        let connexion = null;
-        try {
-            connexion = await this.mariadb.getConnection();
-        
-        
-        }
-
-        catch(error) {
-            console.error(error);
-            console.log('before query')
-            response.send(500);
-            return;
-        }
-
-       
-        const user = connexion.query(`SELECT * FROM ${service.name} WHERE email = ? AND password = ?`, [
-            sha256(username),
-            sha256(password)
-        ]);
-
-        console.log('user', user);
-     
-        if (user) {
+    
+        if (user !== null) {
             // Generate an access token
             const userData = { username: user.username,  role: user.role };
             const accessToken = jwt.sign(userData, service.JWT_SECRET_ACCESSTOKEN, {
@@ -188,18 +188,21 @@ class AuthenticatorService extends MicroService {
             });
 
             const refreshToken = jwt.sign(userData, service.JWT_SECRET_REFRESHTOKEN);
-    
+
             this.storeRefreshToken(refreshToken);
-           
+        
             this.setJWTAccess(response, service, accessToken, false);
             this.setJWTRefresh(response, service, refreshToken);
             return;
         } 
         
         else {
+            // We dont now anything about user context. Clear bad JWT cookies if founds
+            await this.clearJWT(request, response);
+
             response.send('Username or password incorrect');
         }
-    } 
+    }
 }
 
 const path = require('path');
