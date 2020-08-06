@@ -17,6 +17,12 @@ class MicroService {
         this.app.use(helmet());
     }
 
+    getMethod(methodName) {
+        if (typeof this[methodName] === 'function') {
+            return this[methodName].bind(this);
+        }
+    }
+    
     start() {
         this.app.listen(this.port, () => {
             console.log(`${this.constructor.name} started on port ${this.port}`);

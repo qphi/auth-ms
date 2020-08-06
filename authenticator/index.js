@@ -3,96 +3,32 @@
 const MicroService = require('../src/microservice.model');
 const DBService = require('../services/db.service');
 
-const RetrieveServiceMiddleware = require('./retrieveService.middleware');
-const RetrieveUserMiddleware = require('./retrieveUser.middleware');
-
 const mock = require('./authenticator.mock');
 
-const jwt = require('jsonwebtoken');
-const redis = require('redis');
 
-const day_in_ms = 864000000;
-// const mariadb = require('mariadb');
-// const sha256 = require('sha256');
+const recordedRoutes = require('./authenticator.router');
+const RoutingService = require('../services/routing.service');
 
-class AuthenticatorService extends MicroService {
+console.log(RoutingService)
+
+const JWTService = require('../services/JWTAuthoring.service');
+
+class Authenticator extends MicroService {
     constructor(settings = {}) {
         super(settings);
 
-        this.app.post(
-            '/login', 
-
-            [
-                RetrieveServiceMiddleware,
-                RetrieveUserMiddleware
-            ],
-            
-            this.onLogin.bind(this)
-        );
-        
-        // https://stackoverflow.com/questions/3521290/logout-get-or-post#:~:text=The%20post%20should%20be%20used,page%20with%20a%20logout%20GET).
-        // https://softwareengineering.stackexchange.com/questions/196871/what-http-verb-should-the-route-to-log-out-of-your-web-app-be
-        this.app.post(
-            '/logout', 
-            RetrieveServiceMiddleware, 
-            this.onLogout.bind(this)
-        );
-        
-        this.app.get(
-            '/token', 
-            RetrieveServiceMiddleware, 
-            this.generateNewAccessToken.bind(this)
-        );
-
-        this.redis = redis.createClient({
-           port: settings.REDIS_PORT || process.env.REDIS_PORT, 
-           host: settings.REDIS_HOST || process.env.REDIS_HOST, 
-           password: settings.REDIS_PASSWORD || process.env.REDIS_PASSWORD 
+        this.services = {
+            db: new DBService(mock.service),
+            jwt: new JWTService(settings)
+        }
+       
+        const router = recordedRoutes({
+            controllers: {
+                authenticatorController: this
+            }
         });
 
-        this.dbService = new DBService(mock.service);
-    }
-
-    hasRefreshToken(refreshToken) {
-        return new Promise((resolve, reject) => {
-            this.redis.get(refreshToken, (err, value) => {
-                if (err) {
-                    reject(err);
-                }
-
-                else {
-                    resolve(value === '1');
-                }
-            });
-        });
-    }
-
-    storeRefreshToken(refreshToken) {
-        return new Promise((resolve, reject) => {
-            this.redis.set(refreshToken, '1', 'PX', day_in_ms, (err, value) => {
-                if (err) {
-                    reject(err);
-                }
-
-                else {
-                    resolve(value === '1');
-                }
-            });
-        });
-    }
-
-    deleteRefreshToken(refreshToken) {
-        return new Promise((resolve, reject) => {
-            this.redis.del(refreshToken, err => {
-                if (err) {
-                    reject(err);
-                }
-
-                else {
-                    resolve();
-                }
-            });
-        });
+        RoutingService.use(this.app, router);
     }
 
     async generateNewAccessToken(request, response) {
@@ -103,24 +39,40 @@ class AuthenticatorService extends MicroService {
             return response.sendStatus(401);
         }
     
-        if (await this.hasRefreshToken(refresh)) {
+        if (await this.services.jwt.hasRefreshToken(refresh)) {
             return response.sendStatus(403);
         }
     
-        jwt.verify(refresh, service.JWT_SECRET_REFRESHTOKEN, (err, user) => {
-            if (err) {
-                return response.sendStatus(403);
-            }
-    
-            const userData = { username: user.username,  role: user.role };
-            const newAccess = jwt.sign(userData, service.JWT_SECRET_ACCESSTOKEN,         
-                { 
-                    expiresIn: service.JWT_ACCESS_TTL + 'ms' 
-                }
-            );
-    
-            this.setJWTAccess(response, service, newAccess);
-        });
+        let user = null;
+        
+        try {
+            user = this.services.jwt.verify(refresh, service.JWT_SECRET_REFRESHTOKEN);
+        }
+
+        catch (err) {
+            return response.sendStatus(403);
+        }
+
+        const userData = { username: user.username,  role: user.role };
+        const newAccess = this.services.jwt.sign(
+            userData, 
+            service.JWT_SECRET_ACCESSTOKEN, 
+            service.JWT_ACCESS_TTL
+        );
+
+        this.setJWTAccess(response, service, newAccess);
+    }
+
+
+    async clearJWT(request, response) {
+        const service = request.service;
+        const access = this.getCookie(request, service.COOKIE_JWT_REFRESH_NAME);
+        if (access !== null) {
+            await this.services.jwt.deleteRefreshToken(access);    
+        }
+
+        response.clearCookie(service.COOKIE_JWT_ACCESS_NAME);
+        response.clearCookie(service.COOKIE_JWT_REFRESH_NAME);
     }
 
     setJWTAccess(response, service, access, send = true) {
@@ -132,10 +84,6 @@ class AuthenticatorService extends MicroService {
                 maxAge: service.JWT_ACCESS_TTL
             }
         );
-
-        if (send === true) {
-            response.sendStatus(200);
-        }
     }
 
     setJWTRefresh(response, service, refresh, send = true) {
@@ -153,17 +101,6 @@ class AuthenticatorService extends MicroService {
         }
     }
 
-    async clearJWT(request, response) {
-        const service = request.service;
-        const access = this.getCookie(request, service.COOKIE_JWT_REFRESH_NAME);
-        if (access !== null) {
-            await this.deleteRefreshToken(access);    
-        }
-
-        response.clearCookie(service.COOKIE_JWT_ACCESS_NAME);
-        response.clearCookie(service.COOKIE_JWT_REFRESH_NAME);
-    }
-
     async onLogout(request, response) {
         await this.clearJWT(request, response);
         response.send("Logout successful");
@@ -175,7 +112,7 @@ class AuthenticatorService extends MicroService {
         const service = request.service;
         // Read username and password from request body
         const { email, password } = request.user;
-        const user = await this.dbService.findUser(email, password, service);
+        const user = await this.services.db.findUser(email, password, service);
     
         // Filter user from the users array by username and password
         //const user = mock.users.find(u => { return u.username === username && u.password === password });
@@ -183,13 +120,18 @@ class AuthenticatorService extends MicroService {
         if (user !== null) {
             // Generate an access token
             const userData = { username: user.username,  role: user.role };
-            const accessToken = jwt.sign(userData, service.JWT_SECRET_ACCESSTOKEN, {
-                expiresIn: service.JWT_ACCESS_TTL + 'ms'
-            });
+            const accessToken = this.services.jwt.sign(
+                userData, 
+                service.JWT_SECRET_ACCESSTOKEN,
+                service.JWT_ACCESS_TTL
+            );
 
-            const refreshToken = jwt.sign(userData, service.JWT_SECRET_REFRESHTOKEN);
+            const refreshToken = this.services.jwt.sign(
+                userData, 
+                service.JWT_SECRET_REFRESHTOKEN
+            );
 
-            this.storeRefreshToken(refreshToken);
+            this.services.jwt.storeRefreshToken(refreshToken);
         
             this.setJWTAccess(response, service, accessToken, false);
             this.setJWTRefresh(response, service, refreshToken);
@@ -206,8 +148,9 @@ class AuthenticatorService extends MicroService {
 }
 
 const path = require('path');
+const routingService = require('../services/routing.service');
 
-const server = new AuthenticatorService({
+const server = new Authenticator({
     env: path.resolve(__dirname, './.env')
 });
 
