@@ -28,4 +28,5 @@ COOKIE_JWT_REFRESH_NAME=247b8b85d3b7706b866e4eb1890e82d23c7ad4d1cec9f9e2ce02e250
 #Before using in prod
 - Be sure that run with TLS
 - Use a db to list all client app instead of mock
-- Use a redis server instead of array to store token (improve scalability)
+- create register
+- use POW, captcha, rate-limiter
