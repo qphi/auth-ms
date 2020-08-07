@@ -151,8 +151,6 @@ class Authenticator extends MicroService {
         const { email, password, confirmPassword } = request.body;
 
         if (
-            typeof email !== 'string' ||
-            typeof password !== 'string' ||
             typeof confirmPassword !== 'string'
         ) {
             return response.sendStatus(401);
@@ -162,13 +160,37 @@ class Authenticator extends MicroService {
             return response.send('Password mismatch');
         }
 
-        await this.services.db.createUser({
-            email: sha256(email), 
-            password: sha256(password),
-            role: 'member' 
-        }, request.service);
+        const responseMessage = {}
 
-        response.sendStatus(200);
+        try {
+            responseMessage.user_id = await this.services.db.createUser({
+                email: sha256(email), 
+                password: sha256(password),
+                role: 'member' 
+            }, request.service);
+
+
+            if (responseMessage.user_id !== null) {
+                responseMessage.status = 'done';
+            }
+        }
+
+        catch (error) {
+            
+            if (error.name === 'UserAlreadyExistsException') {
+                responseMessage.message = 'An account using this email was found';
+            }
+
+            else {
+                responseMessage.message = error.message;
+            }
+
+            responseMessage.status = 'aborted';
+        }
+
+        finally {
+            response.json(responseMessage);
+        }
     }
 }
 

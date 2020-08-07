@@ -13,7 +13,6 @@ app.use(cookieParser());
 const accessTokenSecret = 'bd715a978b0d2caa370a925755f83a20bc68572279e7f93d9bec79c8904ef12f';
 
 const authenticateJWT = (req, res, next) => {
-    console.log(req.cookies);
     const jwt_access = req.cookies.access;
   
 

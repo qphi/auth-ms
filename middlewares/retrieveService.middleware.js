@@ -1,4 +1,4 @@
-const services = require('./authenticator.mock').servicesRecorded;
+const services = require('../authenticator/authenticator.mock').servicesRecorded;
 
 module.exports = (request, response, next) => {
     const app = request.body.app;

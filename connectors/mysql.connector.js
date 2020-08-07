@@ -2,6 +2,7 @@ const Connector = require('./connector.model');
 const mariadb = require('mariadb');
 
 const uuid = require('uuid');
+const UserAlreadyExistsException = require('../src/Exceptions/UserAlreadyExists.exception');
 
 class MySQLConnector extends Connector {
     constructor(settings = {}) {
@@ -52,13 +53,15 @@ class MySQLConnector extends Connector {
     }
 
     async createUser(userData, service) {
-        let user = null;
         let connexion;
+        let customError = null;
+        let _uuid = null;
+
         try {
             connexion = await this.getConnection();
-            const _uuid = uuid.v5(userData.email, service.MS_UUID); 
+            _uuid = uuid.v5(userData.email, service.MS_UUID); 
 
-            console.log('uuid', _uuid);
+            console.log('create user', _uuid);
             const rows = await connexion.query(`
             INSERT INTO ${service.name} (email, password, role, uuid) VALUES (?, ?, ?, ?);
             `, [
@@ -68,10 +71,16 @@ class MySQLConnector extends Connector {
                 _uuid
             ]);
 
+            console.log("row", rows);
+
         }
 
         catch(error) {
             console.error(error);
+
+            if (error.code === 'ER_DUP_ENTRY') {
+                customError = new UserAlreadyExistsException(error.message);
+            }
         }
 
         finally {
@@ -79,7 +88,13 @@ class MySQLConnector extends Connector {
                 connexion.release();
             }
 
-            return user;
+            console.log('finally', customError, _uuid);
+
+            if (customError !== null) {
+                throw customError;
+            }
+
+            return _uuid;
         }
     }
 }

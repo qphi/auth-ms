@@ -1,7 +1,8 @@
 
 
-const RetrieveServiceMiddleware = require('./retrieveService.middleware');
-const RetrieveUserMiddleware = require('./retrieveUser.middleware');
+const RetrieveServiceMiddleware = require('../middlewares/retrieveService.middleware');
+const RetrieveUserMiddleware = require('../middlewares/retrieveUser.middleware');
+const ConfirmPasswordConstraint = require('../middlewares/confirmPassword.middleware');
 
 module.exports = ctx => {
     return [
@@ -36,7 +37,11 @@ module.exports = ctx => {
         {
             method: 'post',
             path: '/register',
-            middlewares: [ RetrieveServiceMiddleware ],
+            middlewares: [ 
+                ConfirmPasswordConstraint,
+                RetrieveServiceMiddleware 
+            ],
+            
             action: ctx.controllers.authenticatorController.getMethod('onRegister')
         }
     ]
