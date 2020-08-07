@@ -43,6 +43,11 @@ class DBService {
         const connector = this.getConnector(service.DB_TYPE);
         return await connector.findUser(email, password, service);
     }
+
+    async createUser(userData, service) {
+        const connector = this.getConnector(service.DB_TYPE);
+        return await connector.createUser(userData, service);
+    }
 }
 
 module.exports = DBService;

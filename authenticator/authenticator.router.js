@@ -31,6 +31,13 @@ module.exports = ctx => {
             path: 'token',
             middlewares: [ RetrieveServiceMiddleware ],
             action: ctx.controllers.authenticatorController.getMethod('generateNewAccessToken')
+        },
+
+        {
+            method: 'post',
+            path: '/register',
+            middlewares: [ RetrieveServiceMiddleware ],
+            action: ctx.controllers.authenticatorController.getMethod('onRegister')
         }
     ]
 }

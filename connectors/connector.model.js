@@ -6,7 +6,11 @@ class Connector {
         }
     }
 
-    async findUser() {
+    async findUser(email, password, service) {
+        return null;
+    }
+
+    async createUser(userData = { passowrd: 'password', email: 'a@a.com', role: 'member'}) {
         return null;
     }
 }

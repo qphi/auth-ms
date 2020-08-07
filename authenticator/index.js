@@ -5,6 +5,7 @@ const DBService = require('../services/db.service');
 
 const mock = require('./authenticator.mock');
 
+const sha256 = require('sha256');
 
 const recordedRoutes = require('./authenticator.router');
 const RoutingService = require('../services/routing.service');
@@ -144,6 +145,30 @@ class Authenticator extends MicroService {
 
             response.send('Username or password incorrect');
         }
+    }
+
+    async onRegister(request, response) {
+        const { email, password, confirmPassword } = request.body;
+
+        if (
+            typeof email !== 'string' ||
+            typeof password !== 'string' ||
+            typeof confirmPassword !== 'string'
+        ) {
+            return response.sendStatus(401);
+        }
+
+        if (password !== confirmPassword) {
+            return response.send('Password mismatch');
+        }
+
+        await this.services.db.createUser({
+            email: sha256(email), 
+            password: sha256(password),
+            role: 'member' 
+        }, request.service);
+
+        response.sendStatus(200);
     }
 }
 

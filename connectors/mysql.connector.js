@@ -1,6 +1,8 @@
 const Connector = require('./connector.model');
 const mariadb = require('mariadb');
 
+const uuid = require('uuid');
+
 class MySQLConnector extends Connector {
     constructor(settings = {}) {
         super(settings);
@@ -34,6 +36,38 @@ class MySQLConnector extends Connector {
             if (rows && rows.length > 0) {
                 user = rows[0] || null;
             }
+        }
+
+        catch(error) {
+            console.error(error);
+        }
+
+        finally {
+            if (connexion !== null) {
+                connexion.release();
+            }
+
+            return user;
+        }
+    }
+
+    async createUser(userData, service) {
+        let user = null;
+        let connexion;
+        try {
+            connexion = await this.getConnection();
+            const _uuid = uuid.v5(userData.email, service.MS_UUID); 
+
+            console.log('uuid', _uuid);
+            const rows = await connexion.query(`
+            INSERT INTO ${service.name} (email, password, role, uuid) VALUES (?, ?, ?, ?);
+            `, [
+                userData.email,
+                userData.password,
+                userData.role,
+                _uuid
+            ]);
+
         }
 
         catch(error) {

@@ -10,6 +10,10 @@ REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 REDIS_PASSWORD=<PASSWORD>
 
+# replace with correct UUID, of course
+MS_UUID=uuidv5(MS_UUID(auth_ms), <servce_name>)
+
+
 DB_HOST=localhost
 DB_USER=auth_ms_user
 DB_NAME=auth_ms_db
