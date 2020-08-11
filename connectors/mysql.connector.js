@@ -3,6 +3,7 @@ const mariadb = require('mariadb');
 
 const uuid = require('uuid');
 const UserAlreadyExistsException = require('../src/Exceptions/UserAlreadyExists.exception');
+const cookieParser = require('cookie-parser');
 
 class MySQLConnector extends Connector {
     constructor(settings = {}) {
@@ -22,6 +23,35 @@ class MySQLConnector extends Connector {
         return await this.pool.getConnection();
     }
 
+    async getUserUUID(email, service) {
+        let uuid = null;
+        let connexion;
+        try {
+            connexion = await this.getConnection();
+            const rows = await connexion.query(`SELECT uuid FROM ${service.name} WHERE email = ?`, [
+                email
+            ]);
+
+            if (rows && rows.length > 0) {
+                uuid = rows[0] || null;
+            }
+        }
+
+        catch(error) {
+            console.error(error);
+        }
+
+        finally {
+            this.releaseConnexion(connexion);
+            return uuid;
+        }
+    }
+
+    releaseConnexion(connexion) {
+        if (connexion !== null) {
+            connexion.release();
+        }
+    }
 
     /** @override */
     async findUser(email, password, service) {
@@ -44,9 +74,7 @@ class MySQLConnector extends Connector {
         }
 
         finally {
-            if (connexion !== null) {
-                connexion.release();
-            }
+            this.releaseConnexion(connexion);
 
             return user;
         }
@@ -61,7 +89,6 @@ class MySQLConnector extends Connector {
             connexion = await this.getConnection();
             _uuid = uuid.v5(userData.email, service.MS_UUID); 
 
-            console.log('create user', _uuid);
             const rows = await connexion.query(`
             INSERT INTO ${service.name} (email, password, role, uuid) VALUES (?, ?, ?, ?);
             `, [
@@ -70,9 +97,6 @@ class MySQLConnector extends Connector {
                 userData.role,
                 _uuid
             ]);
-
-            console.log("row", rows);
-
         }
 
         catch(error) {
@@ -87,8 +111,6 @@ class MySQLConnector extends Connector {
             if (connexion !== null) {
                 connexion.release();
             }
-
-            console.log('finally', customError, _uuid);
 
             if (customError !== null) {
                 throw customError;

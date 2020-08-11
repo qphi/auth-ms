@@ -3,6 +3,7 @@
 const RetrieveServiceMiddleware = require('../middlewares/retrieveService.middleware');
 const RetrieveUserMiddleware = require('../middlewares/retrieveUser.middleware');
 const ConfirmPasswordConstraint = require('../middlewares/confirmPassword.middleware');
+const EmailIsValid = require('../middlewares/emailIsValid.constraint.middleware');
 
 module.exports = ctx => {
     return [
@@ -43,6 +44,28 @@ module.exports = ctx => {
             ],
             
             action: ctx.controllers.authenticatorController.getMethod('onRegister')
-        }
+        },
+
+        {
+            method:'post',
+            path: '/forgot-password',
+            middlewares: [ 
+                RetrieveServiceMiddleware,
+                EmailIsValid
+            ],
+
+            action: ctx.controllers.authenticatorController.getMethod('onForgotPassword')
+        },
+
+        // {
+        //     method:'post',
+        //     path: '/reset-password',
+        //     middlewares: [ 
+        //         RetrieveServiceMiddleware,
+        //         EmailIsValid
+        //     ],
+
+        //     action: ctx.controllers.authenticatorController.getMethod('forgotPassword')
+        // },
     ]
 }

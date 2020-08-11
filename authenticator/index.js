@@ -10,7 +10,7 @@ const sha256 = require('sha256');
 const recordedRoutes = require('./authenticator.router');
 const RoutingService = require('../services/routing.service');
 
-console.log(RoutingService)
+const _6hours = 21600000;
 
 const JWTService = require('../services/JWTAuthoring.service');
 
@@ -21,8 +21,9 @@ class Authenticator extends MicroService {
         this.services = {
             db: new DBService(mock.service),
             jwt: new JWTService(settings)
-        }
-       
+        };
+
+
         const router = recordedRoutes({
             controllers: {
                 authenticatorController: this
@@ -192,10 +193,42 @@ class Authenticator extends MicroService {
             response.json(responseMessage);
         }
     }
+
+    async onForgotPassword(request, response) {
+        const email = request.body.email;
+        const service = request.service;
+
+        const uuid = await this.services.db.getUserUUID(sha256(email), service);
+
+        if (uuid === null) {
+            console.log('uuid is null');
+            return response.sendStatus(200);
+        }
+
+        const now = Date.now();
+        const expire = now + _6hours;
+
+        console.log(service);
+        const token = this.services.jwt.sign({
+            user_uuid: uuid, 
+            service_uuid: service.MS_UUID, 
+            created_at: now, 
+            expire_at: expire
+        },
+        
+            service.JWT_SECRET_FORGOTPASSWORDTOKEN,
+            _6hours
+        );
+
+        console.log(token);
+
+        response.json(token);
+    }
 }
 
 const path = require('path');
 const routingService = require('../services/routing.service');
+const { cpuUsage } = require('process');
 
 const server = new Authenticator({
     env: path.resolve(__dirname, './.env')

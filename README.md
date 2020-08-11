@@ -48,3 +48,4 @@ POST /register
 - Use a db to list all client app instead of mock
 - create register
 - use POW, captcha, rate-limiter
+- use redis to cache userExists

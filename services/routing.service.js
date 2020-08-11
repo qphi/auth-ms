@@ -3,7 +3,6 @@ const Singleton = require("./singletonFactory.pattern");
 class RoutingService extends Singleton {
     use(app, router) {
         router.forEach(route => {
-            console.log(route);
             const method = (route.method || 'get').toLowerCase();
             const middlewares = route.middlewares || [];
 

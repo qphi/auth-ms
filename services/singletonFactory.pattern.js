@@ -8,8 +8,6 @@ class Singleton {
            
             throw `Try to instanciate multiple time a singleton (${name})`;
         }
-
-        console.log('NEW', name);
     }
 
     static create(type) {

@@ -10,6 +10,10 @@ class Connector {
         return null;
     }
 
+    async getUserUUID(email, service) {
+        return null;
+    }
+
     async createUser(userData = { passowrd: 'password', email: 'a@a.com', role: 'member'}) {
         return null;
     }
