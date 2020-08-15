@@ -2,7 +2,7 @@ const redis = require('redis');
 const jwt = require('jsonwebtoken');
 
 const day_in_ms = 864000000;
-
+const _6hours = 21600000;
 
 class JWTAuthoringService {
     constructor(settings) {
@@ -36,6 +36,34 @@ class JWTAuthoringService {
 
                 else {
                     resolve(value === '1');
+                }
+            });
+        });
+    }
+
+    storeForgotPasswordToken(token, data) {
+        return new Promise((resolve, reject) => {
+            this.redis.set(token, JSON.stringify(data), 'PX', _6hours, (err, value) => {
+                if (err) {
+                    reject(err);
+                }
+
+                else {
+                    resolve(true);
+                }
+            });
+        });
+    }
+
+    getForgotPasswordToken(token) {
+        return new Promise((resolve, reject) => {
+            this.redis.get(token, (err, value) => {
+                if (err) {
+                    reject(err);
+                }
+
+                else {
+                    resolve(JSON.parse(value));
                 }
             });
         });

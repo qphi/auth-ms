@@ -10,6 +10,10 @@ class Connector {
         return null;
     }
 
+    async updateUserPassword(uuid, newPassword, service) {
+        return null;
+    }
+
     async getUserUUID(email, service) {
         return null;
     }

@@ -9,7 +9,7 @@ module.exports = ctx => {
     return [
         {
             method: 'post',
-            path: '/login',
+            path: '/api/login',
             middlewares: [
                 RetrieveServiceMiddleware,
                 RetrieveUserMiddleware
@@ -23,21 +23,21 @@ module.exports = ctx => {
         // https://softwareengineering.stackexchange.com/questions/196871/what-http-verb-should-the-route-to-log-out-of-your-web-app-be
         {
             method: 'post',
-            path: '/logout',
+            path: '/api/logout',
             middlewares: [ RetrieveServiceMiddleware ],
             action: ctx.controllers.authenticatorController.getMethod('onLogout')
         }, 
 
         {
             method:'get',
-            path: 'token',
+            path: '/api/token',
             middlewares: [ RetrieveServiceMiddleware ],
             action: ctx.controllers.authenticatorController.getMethod('generateNewAccessToken')
         },
 
         {
             method: 'post',
-            path: '/register',
+            path: '/api/register',
             middlewares: [ 
                 ConfirmPasswordConstraint,
                 RetrieveServiceMiddleware 
@@ -48,7 +48,7 @@ module.exports = ctx => {
 
         {
             method:'post',
-            path: '/forgot-password',
+            path: '/api/forgot-password',
             middlewares: [ 
                 RetrieveServiceMiddleware,
                 EmailIsValid
@@ -57,15 +57,15 @@ module.exports = ctx => {
             action: ctx.controllers.authenticatorController.getMethod('onForgotPassword')
         },
 
-        // {
-        //     method:'post',
-        //     path: '/reset-password',
-        //     middlewares: [ 
-        //         RetrieveServiceMiddleware,
-        //         EmailIsValid
-        //     ],
+        {
+            method:'post',
+            path: '/api/reset-password',
+            middlewares: [
+                ConfirmPasswordConstraint,
+                RetrieveServiceMiddleware
+            ],
 
-        //     action: ctx.controllers.authenticatorController.getMethod('forgotPassword')
-        // },
+            action: ctx.controllers.authenticatorController.getMethod('onResetPassword')
+        },
     ]
 }

@@ -6,6 +6,7 @@ const DBService = require('../services/db.service');
 const mock = require('./authenticator.mock');
 
 const sha256 = require('sha256');
+const nodemailer = require('nodemailer');
 
 const recordedRoutes = require('./authenticator.router');
 const RoutingService = require('../services/routing.service');
@@ -20,9 +21,26 @@ class Authenticator extends MicroService {
 
         this.services = {
             db: new DBService(mock.service),
-            jwt: new JWTService(settings)
+            jwt: new JWTService(settings),
+            mailer: nodemailer.createTransport({
+                host: 'smtp.mailtrap.io',
+                port: 2525,
+                auth: {
+                   user: process.env.MAILTRAP_USER_ID,
+                   pass: process.env.MAILTRAP_PASSWORD
+                }
+            })
         };
 
+
+        console.log({
+            host: 'smtp.mailtrap.io',
+            port: 2525,
+            auth: {
+               user: process.env.MAILTRAP_USER_ID,
+               pass: process.env.MAILTRAP_PASSWORD
+            }
+        })
 
         const router = recordedRoutes({
             controllers: {
@@ -208,28 +226,92 @@ class Authenticator extends MicroService {
         const now = Date.now();
         const expire = now + _6hours;
 
-        console.log(service);
-        const token = this.services.jwt.sign({
+        const data = {
             user_uuid: uuid, 
             service_uuid: service.MS_UUID, 
             created_at: now, 
             expire_at: expire
-        },
-        
+        };
+
+        console.log(service);
+        const token = this.services.jwt.sign(
+            data,
             service.JWT_SECRET_FORGOTPASSWORDTOKEN,
             _6hours
         );
 
+        await this.services.jwt.storeForgotPasswordToken(token, data);
+
+
+        this.services.mailer.sendMail({
+            from: 'authenticator-service@tesla.com', // Sender address
+            to: email,         // List of recipients
+            subject: 'Forgot Password', // Subject line
+            text: `
+                to reset your password please follow this link : http://localhost:8626/reset-password-form?token=${token}
+            ` // Plain text body
+        }, 
+        
+        (err, info) => {
+            if (err) {
+              console.log(err)
+            } else {
+              console.log(info);
+            }
+        });
         console.log(token);
 
         response.json(token);
     }
+
+    async onResetPassword(request, response) {
+        const service = request.service;
+        const token = request.body.token;
+        const password = request.body.password;
+
+        let tokenData = null;
+
+        // check if token is valid
+        try {
+            tokenData = await this.services.jwt.verify(token, service.JWT_SECRET_FORGOTPASSWORDTOKEN);
+        }
+
+        catch(err) {
+            return response.sendStatus(401);
+        }
+
+        // check integrity by retrieve it from our token storage
+        const storedTokenData = await this.services.jwt.getForgotPasswordToken(token);
+
+        if (storedTokenData === null) {
+            return response.sendStatus(401);
+        }
+
+        
+        // duplicate custom field added by jwt-lib
+        // storedTokenData.iat = tokenData.iat;
+        // storedTokenData.exp = tokenData.exp;
+        delete tokenData.iat;
+        delete tokenData.exp;
+        console.log(tokenData, storedTokenData);
+
+        // compare decoded content
+        if (JSON.stringify(tokenData) !== JSON.stringify(storedTokenData)) {
+            console.log('its !==')
+            return response.sendStatus(401);
+        }
+
+        else {
+            // everything seems ok, just update the password
+            const user_uuid = storedTokenData.user_uuid;
+            await this.services.db.updateUserPassword(user_uuid, sha256(password), service);
+        }
+        
+        return response.sendStatus(200);
+    }
 }
 
 const path = require('path');
-const routingService = require('../services/routing.service');
-const { cpuUsage } = require('process');
-
 const server = new Authenticator({
     env: path.resolve(__dirname, './.env')
 });

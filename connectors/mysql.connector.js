@@ -119,6 +119,33 @@ class MySQLConnector extends Connector {
             return _uuid;
         }
     }
+
+
+    async updateUserPassword(uuid, newPassword, service) {
+        let user = null;
+        let connexion;
+        try {
+            connexion = await this.getConnection();
+            const rows = await connexion.query(`UPDATE ${service.name} SET password = ? WHERE uuid = ?`, [
+                newPassword,
+                uuid
+            ]);
+
+            if (rows && rows.length > 0) {
+                user = rows[0] || null;
+            }
+        }
+
+        catch(error) {
+            console.error(error);
+        }
+
+        finally {
+            this.releaseConnexion(connexion);
+
+            return user;
+        }
+    }
 }
 
 module.exports = MySQLConnector;

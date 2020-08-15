@@ -49,3 +49,8 @@ POST /register
 - create register
 - use POW, captcha, rate-limiter
 - use redis to cache userExists
+
+
+# DevStack
+## How to ?
+- [Send email in dev](https://stackabuse.com/how-to-send-emails-with-node-js/)

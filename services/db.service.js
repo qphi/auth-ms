@@ -53,6 +53,12 @@ class DBService {
         const connector = this.getConnector(service.DB_TYPE);
         return await connector.createUser(userData, service);
     }
+
+    async updateUserPassword(uuid, newPassword, service) {
+        const connector = this.getConnector(service.DB_TYPE);
+        return await connector.updateUserPassword(uuid, newPassword, service);
+
+    }
 }
 
 module.exports = DBService;
