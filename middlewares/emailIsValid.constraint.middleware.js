@@ -12,7 +12,7 @@ module.exports = (request, response, next) => {
     }
 
     else {
-        response.json({message: 'nope'});
+        console.log('invalid email');
         response.sendStatus(401);
     }
 }

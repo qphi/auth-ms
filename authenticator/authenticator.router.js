@@ -47,6 +47,16 @@ module.exports = ctx => {
         },
 
         {
+            method:'get',
+            path: '/forgot-password',
+            middlewares: [ 
+                RetrieveServiceMiddleware
+            ],
+
+            action: ctx.controllers.authenticatorController.getMethod('renderForgetPassword')
+        },
+
+        {
             method:'post',
             path: '/api/forgot-password',
             middlewares: [ 

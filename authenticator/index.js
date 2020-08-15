@@ -15,6 +15,7 @@ const _6hours = 21600000;
 
 const JWTService = require('../services/JWTAuthoring.service');
 
+
 class Authenticator extends MicroService {
     constructor(settings = {}) {
         super(settings);
@@ -47,6 +48,9 @@ class Authenticator extends MicroService {
                 authenticatorController: this
             }
         });
+
+        this.app.set('views', settings.views_path);
+        this.app.set('view engine', 'ejs');
 
         RoutingService.use(this.app, router);
     }
@@ -264,6 +268,16 @@ class Authenticator extends MicroService {
         response.json(token);
     }
 
+    renderForgetPassword(request, response) {
+        const service = request.service;
+
+
+        response.render('forgot-password', {
+            service_name: service.name,
+            service_img: service.ICON_SRC
+        });
+    }
+
     async onResetPassword(request, response) {
         const service = request.service;
         const token = request.body.token;
@@ -313,7 +327,8 @@ class Authenticator extends MicroService {
 
 const path = require('path');
 const server = new Authenticator({
-    env: path.resolve(__dirname, './.env')
+    env: path.resolve(__dirname, './.env'),
+    views_path: path.resolve(__dirname, '../views')
 });
 
 server.start();

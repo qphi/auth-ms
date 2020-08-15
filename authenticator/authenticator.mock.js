@@ -10,7 +10,8 @@ module.exports =  {
             JWT_SECRET_FORGOTPASSWORDTOKEN: "1b836a3fad15f94b39fb29afda2457305d4ca6efe337cf5f42914dd657f69646",
             MS_UUID: '7b22940b-688a-54e7-8741-cd9d4aaf4642',
             COOKIE_JWT_ACCESS_NAME: "9c7b76bbec593fc568e6eb05b65dcbdbd1c918b31f5aca6201c1520361b222c0",
-            COOKIE_JWT_REFRESH_NAME: "247b8b85d3b7706b866e4eb1890e82d23c7ad4d1cec9f9e2ce02e250271f8847"
+            COOKIE_JWT_REFRESH_NAME: "247b8b85d3b7706b866e4eb1890e82d23c7ad4d1cec9f9e2ce02e250271f8847",
+            ICON_SRC: 'https://freesvg.org/img/1489798288.png'
         },
 
         'test-2': {
@@ -21,7 +22,7 @@ module.exports =  {
             JWT_SECRET_REFRESHTOKEN: 'caf0b212b7f2cab81dbcaf685d98012eb881115b65cf7276b992cbac598265ef', 
             MS_UUID: 'ddb5640d-b8f6-538b-9bea-18b00bd2b236',
             COOKIE_JWT_ACCESS_NAME: 'eb328df29dcdf2b244c96d1263505f7599c3467a66bc6835cb664f119574b140',
-            COOKIE_JWT_REFRESH_NAME: '19c55fce5840eb6a3fcb5087e0ff5478069be9fc82cbaf83e66e574a9e2da3ec'
+            COOKIE_JWT_REFRESH_NAME: '19c55fce5840eb6a3fcb5087e0ff5478069be9fc82cbaf83e66e574a9e2da3ec',
         }
     },
 

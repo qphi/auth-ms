@@ -13,7 +13,11 @@ class MicroService {
         this.app = express();
         
         this.port = settings.port || process.env.PORT;
+
         this.app.use(bodyParser.json());
+        this.app.use(bodyParser.urlencoded({
+            extended: true
+          }));
         this.app.use(helmet());
     }
 
