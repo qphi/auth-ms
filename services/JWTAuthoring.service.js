@@ -69,7 +69,7 @@ class JWTAuthoringService {
         });
     }
 
-    deleteRefreshToken(refreshToken) {
+    deleteToken(refreshToken) {
         return new Promise((resolve, reject) => {
             this.redis.del(refreshToken, err => {
                 if (err) {
@@ -82,7 +82,6 @@ class JWTAuthoringService {
             });
         });
     }
-
     
     sign(data, secret, ttl) {
         return jwt.sign(data, secret,         

@@ -46,12 +46,12 @@ POST /register
 #Before using in prod
 - Be sure that run with TLS
 - Use a db to list all client app instead of mock
-- Clear forgot-token as soon as used (from redis)
 - Use defaut img for forgot-password page
 - Allow upload file for back-office solution
 - Check MySQL injection
 - use POW, captcha, rate-limiter, idempotency, client-side avoid multiples submit
 - use redis to cache userExists
+- implement BO CRUD (restrict by IP + user account)
 
 
 # DevStack

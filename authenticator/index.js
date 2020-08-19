@@ -92,7 +92,7 @@ class Authenticator extends MicroService {
         const service = request.service;
         const access = this.getCookie(request, service.COOKIE_JWT_REFRESH_NAME);
         if (access !== null) {
-            await this.services.jwt.deleteRefreshToken(access);    
+            await this.services.jwt.deleteToken(access);    
         }
 
         response.clearCookie(service.COOKIE_JWT_ACCESS_NAME);
@@ -252,7 +252,7 @@ class Authenticator extends MicroService {
             to: email,         // List of recipients
             subject: 'Forgot Password', // Subject line
             text: `
-                to reset your password please follow this link : http://localhost:8626/reset-password-form?token=${token}
+                to reset your password please follow this link : ${this.getResetPasswordURL(service)}?token=${token}
             ` // Plain text body
         }, 
         
@@ -288,6 +288,8 @@ class Authenticator extends MicroService {
         // check if token is valid
         try {
             tokenData = await this.services.jwt.verify(token, service.JWT_SECRET_FORGOTPASSWORDTOKEN);
+            await this.services.jwt.deleteToken(token);
+            await this.clearJWT();
         }
 
         catch(err) {
@@ -322,6 +324,16 @@ class Authenticator extends MicroService {
         }
         
         return response.sendStatus(200);
+    }
+
+    getResetPasswordURL(service) {
+        if (service.FORGOT_PASSWORD_URL) {
+            return service.FORGOT_PASSWORD_URL;
+        }
+
+        else {
+            return process.env.FORGOT_PASSWORD_URL;
+        }
     }
 }
 
