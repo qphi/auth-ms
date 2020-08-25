@@ -335,11 +335,22 @@ class Authenticator extends MicroService {
             return process.env.FORGOT_PASSWORD_URL;
         }
     }
+
+    async onRecordService(request, response) {
+        const name = request.body.name;
+       
+        await this.services.db.record({
+            name: name,
+            DB_TYPE: 'mysql'
+        });
+
+        return response.sendStatus(200);
+    }
 }
 
 const path = require('path');
 const server = new Authenticator({
-    env: path.resolve(__dirname, './.env'),
+    env: path.resolve(__dirname, '../.env'),
     views_path: path.resolve(__dirname, '../views')
 });
 

@@ -77,5 +77,13 @@ module.exports = ctx => {
 
             action: ctx.controllers.authenticatorController.getMethod('onResetPassword')
         },
+
+        {
+            method:'post',
+            path: '/api/record-app',
+            middlewares: [],
+
+            action: ctx.controllers.authenticatorController.getMethod('onRecordService')
+        },
     ]
 }

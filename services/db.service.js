@@ -39,6 +39,11 @@ class DBService {
         }
     }
 
+    async record(service) {
+        const connector = this.getConnector(service.DB_TYPE);
+        return await connector.record(service);
+    }
+
     async findUser(email, password, service) {
         const connector = this.getConnector(service.DB_TYPE);
         return await connector.findUser(email, password, service);

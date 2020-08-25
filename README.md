@@ -20,16 +20,17 @@ First, you need to clone this repo, of course. Docker settings are not ready yet
 - `/bin/books.mock.sql` create a mock for a `book` application.
 
 ## Setup your ENV
-Copy `./authenticator/.env-example` in `/authenticator/.env` file. You probably should not rewrite all entry. `/authenticator/.env` will contains your credentials, do not commit it. Add data to `./authenticator/.env-example` if you want to share any updates.
+Copy `./authenticator/.env-example` in `/.env` file. You probably should not rewrite all entry. `/.env` will contains your credentials, do not commit it. Add data to `./authenticator/.env-example` if you want to share any updates.
 
 
 ```
 REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
+REDIS_PORT=16379 # or 6379 by default without docker
 REDIS_PASSWORD=<your redis password for auth>
 
 # replace with values set in your create_db.sql
 DB_HOST=localhost
+DB_PORT= 13306 # or 3306 by default without docker
 DB_USER=auth_ms_user
 DB_NAME=auth_ms_db
 DB_PASSWORD=UJB8BK3d6keLPMrwMQq9ezPG8VjBR4dZb7qxEb5BQRCzug2gMQCPEwMZ2nWYNzEg3V9rYJUMYKrY5vwfAyHw9p4ne69JjwEDt4FzWMQwHedH39K4u7E48rjY6fQGH4bypgfERa7j4NVZVThZBgYSzDSp6sGBmWSpVpPb2vnzXwkVyYWbStSxS5ewgE2eX7yzMG8eCgnZ6kJQ4pGFLjbFsjTLxEKMJCtjXKhBna33YpwDVjvURVfMZ2P6Rd5TL4u8bTLYaaK75bE3PqmSqG3ZTBKUXMP6xMTFFHuGMSUzhzegSbSUw8PuMJ8NhM3ghfNtWEge8sVRx9QMZM2JmZY2G4XuyTvBMb4EG5kzpT8zscQcDh683Mpxz54a2YSBAEVWNuMeH5QEZwp6zANTf6B8r5RGxexERfSBDmQ9L4YncvkRdWSBCY3NnE3u5DdpBjKSfGnLgUHwAmxRSbtR3DVNdKUwFttGRJj4UQvGnShs6Uymw4M6neASWThkHDQm3T6qVW5Q77wfwq336aLQB6WLE4jGZDDueMmRrG7V4sJTHGpXaHmPQPqMRnkAmnuhQ2WqRy7skXMBwgSpdMbZg57AjbFwcx4F25AduxrSYtEmDtLVrES4TLuSnrtSRTHqu968G9JxJdTQWWEhYqKNbpzC3xLyj7pv9MDzQ33pGYgrERpHMtmM9RzxXB7jsxQvk8u5npyGDCQjXJQ2HhDjTCyxuNGTXEyY38LDuDVFjCSedhYGajF6Hb8kzKL6Pb3Az8ZabsNQJRA5v2hfKSTgzHgAEMw2XWqVrqmdkLaZPuyZ4Ct9Pzhkz2BkDExnGgDwuvh2nUHKMD6XCTjZhBxAz2FFUA6cVXzJuBWt7f835bdMDxkybzZegyVgcfyP32w4JrrYjUaYSJ2PFyjSca9KVSfUTDzaXFrmXeCNkChjf2fWgtgsKaLytcsvGY9vFu4jhgJk6BHZLgXY65VauGH6qSkL6QXjtu4af9aSb7tECBKTWQbZaVkq7q8EAxEYBQswecN5
@@ -41,7 +42,7 @@ NODE_ENV=development
 PORT=8626
 
 REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
+REDIS_PORT=16379 # or 6379 by default without docker
 REDIS_PASSWORD=<PASSWORD>
 
 # replace with correct UUID, of course
@@ -49,6 +50,7 @@ MS_UUID=uuidv5(MS_UUID(auth_ms), <servce_name>)
 
 
 DB_HOST=localhost
+DB_PORT= 13306 # or 3306 by default without docker
 DB_USER=auth_ms_user
 DB_NAME=auth_ms_db
 DB_PASSWORD=<PASSWORD>
@@ -90,7 +92,7 @@ Quelques recommandations pour construire ses tokens:
 
 Example : sha256('025782-my-app-cookie-jwt-access) with SALT = 025782, APPNAME = my-app and FUNCTION = cookie-jwt-access
 
-- Pour les ID "utiles" on préfère utiliser des UID qui sont quasi-uniques et lisibles ! Pour les générer à la main => https://www.uuidtools.com/v5, avec le namespace correspondant à la valeur `MS_UUID` dans le fichier `/authenticator/.env`, et en valeur le nom de l'application.
+- Pour les ID "utiles" on préfère utiliser des UID qui sont quasi-uniques et lisibles ! Pour les générer à la main => https://www.uuidtools.com/v5, avec le namespace correspondant à la valeur `MS_UUID` dans le fichier `/.env`, et en valeur le nom de l'application.
 
 Note :
 

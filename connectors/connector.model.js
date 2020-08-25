@@ -6,6 +6,10 @@ class Connector {
         }
     }
 
+    async record(service) {
+        return null;
+    }
+
     async findUser(email, password, service) {
         return null;
     }

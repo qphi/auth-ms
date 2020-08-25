@@ -11,6 +11,7 @@ class MySQLConnector extends Connector {
 
         this.pool = mariadb.createPool({
             database: process.env.DB_NAME,
+            //port: process.env.DB_PORT || 3306,
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
             password: process.env.DB_PASSWORD,
@@ -21,6 +22,28 @@ class MySQLConnector extends Connector {
 
     async getConnection() {
         return await this.pool.getConnection();
+    }
+
+    async record(service) {
+        let connexion;
+        try {
+            connexion = await this.getConnection();
+            //const query = `CREATE TABLE "${service.name}" (email char(64) not null unique, password char(64) not null, role varchar(10) not null, uuid char(36) primary key)`;
+            const query = `CREATE TABLE ${service.name} (email char(64) not null unique, password char(64) not null, role varchar(10) not null, uuid char(36) primary key);`;
+            console.log(query, service);
+            const rows = await connexion.query(query,
+            [
+                service.name
+            ]);
+        }
+
+        catch(error) {
+            console.error(error);
+        }
+
+        finally {
+            this.releaseConnexion(connexion);
+        } 
     }
 
     async getUserUUID(email, service) {
