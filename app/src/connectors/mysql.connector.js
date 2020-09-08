@@ -24,17 +24,104 @@ class MySQLConnector extends Connector {
         return await this.pool.getConnection();
     }
 
-    async record(service) {
-        let connexion;
+    async createUserTable(connexion, service) {
         try {
             connexion = await this.getConnection();
-            //const query = `CREATE TABLE "${service.name}" (email char(64) not null unique, password char(64) not null, role varchar(10) not null, uuid char(36) primary key)`;
             const query = `CREATE TABLE ${service.name} (email char(64) not null unique, password char(64) not null, role varchar(10) not null, uuid char(36) primary key);`;
             console.log(query, service);
             const rows = await connexion.query(query,
             [
                 service.name
             ]);
+        }
+
+        catch(error) {
+            console.error(error);
+        }
+    }
+
+    async addServiceRecorded(connexion, service) {
+        try {
+            connexion = await this.getConnection();
+            const query = ` 
+            INSERT INTO ms_recorded (
+                DB_TYPE,
+                JWT_ACCESS_TTL,
+                JWT_SECRET_ACCESSTOKEN, 
+                JWT_SECRET_REFRESHTOKEN, 
+                JWT_SECRET_FORGOTPASSWORDTOKEN, 
+                MS_UUID,
+                COOKIE_JWT_ACCESS_NAME, 
+                COOKIE_JWT_REFRESH_NAME,
+                SALT
+            ) VALUES (
+                ?,
+                ?,
+                ?, 
+                ?, 
+                ?, 
+                ?,
+                ?, 
+                ?,
+                ?
+            );`;
+
+            console.log(query, service);
+            const rows = await connexion.query(query,
+            [
+                service.DB_TYPE,
+                service.JWT_ACCESS_TTL,
+                service.JWT_SECRET_ACCESSTOKEN, 
+                service.JWT_SECRET_REFRESHTOKEN, 
+                service.JWT_SECRET_FORGOTPASSWORDTOKEN, 
+                service.MS_UUID,
+                service.COOKIE_JWT_ACCESS_NAME, 
+                service.COOKIE_JWT_REFRESH_NAME,
+                service.SALT
+            ]);
+        }
+
+        catch(error) {
+            console.error(error);
+        }
+    }
+
+    async addServicePublicData(connexion, service) {
+        try {
+            connexion = await this.getConnection();
+            const query = ` 
+            INSERT INTO ms_public_data (
+                MS_UUID,
+                title,
+                icon_src
+            ) VALUES (
+                ?,
+                ?,
+                ?
+            );
+            `;
+
+            console.log(query, service);
+            const rows = await connexion.query(query,
+            [
+                service.MS_UUID,
+                service.name,
+                service.icon_src || ''
+            ]);
+        }
+
+        catch(error) {
+            console.error(error);
+        }
+    }
+
+    async record(service) {
+        let connexion;
+        try {
+            connexion = await this.getConnection();
+            await this.createUserTable(connexion, service);
+            await this.addServiceRecorded(connexion, service);
+            await this.addServicePublicData(connexion, service);
         }
 
         catch(error) {

@@ -13,7 +13,8 @@ CREATE TABLE ms_recorded (
     JWT_SECRET_FORGOTPASSWORDTOKEN char(64) not null, 
     MS_UUID char(36) primary key,
     COOKIE_JWT_ACCESS_NAME char(64) not null, 
-    COOKIE_JWT_REFRESH_NAME char(64) not null
+    COOKIE_JWT_REFRESH_NAME char(64) not null,
+    SALT char(16)
 );
 
 INSERT INTO ms_recorded (
@@ -24,7 +25,8 @@ INSERT INTO ms_recorded (
     JWT_SECRET_FORGOTPASSWORDTOKEN, 
     MS_UUID,
     COOKIE_JWT_ACCESS_NAME, 
-    COOKIE_JWT_REFRESH_NAME
+    COOKIE_JWT_REFRESH_NAME,
+    SALT
 ) VALUES (
     'mysql',
     300000,
@@ -34,6 +36,23 @@ INSERT INTO ms_recorded (
     '46487d3b-0d30-5161-9792-ca9eb1558b9d',
     'dee22d44fadff528bc528430fad9fe594ccbac639b4c726c24914dd710f02ace', 
     'ee4baa99e6dad21105906bc947015c7cdbdcb5922fd8f3f3c323f6d251260ef3' 
+);
+
+DROP TABLE IF EXISTS ms_public_data;
+CREATE TABLE ms_public_data ( 
+    MS_UUID char(36) primary key,
+    title varchar(64) not null, 
+    icon_src varchar(256)
+);
+
+INSERT INTO ms_public_data (
+    MS_UUID,
+    title,
+    icon_src
+) VALUES (
+    '46487d3b-0d30-5161-9792-ca9eb1558b9d',
+    'Authenticator Micro-Service',
+    'https://auth-ms.s3.eu-west-3.amazonaws.com/icon_src/lock.svg'
 );
 
 DROP TABLE IF EXISTS auth_ms;

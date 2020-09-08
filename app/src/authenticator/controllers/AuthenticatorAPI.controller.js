@@ -1,5 +1,7 @@
 const BaseController = require('../../BaseController.controller');
 const sha256 = require('sha256');
+const crypto = require('crypto');
+const uuid = require('uuid');
 
 class AuthenthicatorAPIController extends BaseController {
     constructor(settings = { services : {} }) {
@@ -174,7 +176,6 @@ class AuthenthicatorAPIController extends BaseController {
         const uuid = await this.services.db.getUserUUID(sha256(email), service);
 
         if (uuid === null) {
-            console.log('uuid is null');
             return response.sendStatus(200);
         }
 
@@ -188,7 +189,6 @@ class AuthenthicatorAPIController extends BaseController {
             expire_at: expire
         };
 
-        console.log(service);
         const token = this.services.jwt.sign(
             data,
             service.JWT_SECRET_FORGOTPASSWORDTOKEN,
@@ -250,11 +250,9 @@ class AuthenthicatorAPIController extends BaseController {
         // storedTokenData.exp = tokenData.exp;
         delete tokenData.iat;
         delete tokenData.exp;
-        console.log(tokenData, storedTokenData);
 
         // compare decoded content
         if (JSON.stringify(tokenData) !== JSON.stringify(storedTokenData)) {
-            console.log('its !==')
             return response.sendStatus(401);
         }
 
@@ -280,12 +278,25 @@ class AuthenthicatorAPIController extends BaseController {
     async onCreateService(request, response) {
         const name = request.body.name;
 
-        console.log("name", name)
        
-        await this.services.db.record({
+        const SALT = crypto.randomBytes(16);
+        const settings = {
+            DB_TYPE: 'mysql',
             name: name,
-            DB_TYPE: 'mysql'
-        });
+            icon_src: '',
+
+            JWT_ACCESS_TTL: 180000,
+            JWT_SECRET_ACCESSTOKEN: sha256(`jwt-${name}-access-token-${SALT}`), 
+            JWT_SECRET_REFRESHTOKEN: sha256(`jwt-${name}-refresh-token-${SALT}`), 
+            JWT_SECRET_FORGOTPASSWORDTOKEN: sha256(`jwt-${name}-forgotpassword-token-${SALT}`), 
+            MS_UUID: uuid.v5(name, process.env.MS_UUID),
+            COOKIE_JWT_ACCESS_NAME: sha256(`jwt-${name}-access-cookie-${SALT}`), 
+            COOKIE_JWT_REFRESH_NAME: sha256(`jwt-${name}-refresh-cookie-${SALT}`),
+            SALT
+        }
+
+        
+        await this.services.db.record(settings);
 
         return response.sendStatus(200);
     }
