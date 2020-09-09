@@ -18,6 +18,10 @@ class Connector {
         return null;
     }
 
+    async getRecord(ms_uuid) {
+        return null;
+    }
+
     async getUserUUID(email, service) {
         return null;
     }

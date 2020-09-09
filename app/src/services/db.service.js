@@ -54,6 +54,11 @@ class DBService {
         return await connector.getUserUUID(email, service);
     }
 
+    async getRecord(ms_uuid) {
+        const connector = this.getConnector('mysql');
+        return await connector.getRecord(ms_uuid);
+    }
+
     async createUser(userData, service) {
         const connector = this.getConnector(service.DB_TYPE);
         return await connector.createUser(userData, service);

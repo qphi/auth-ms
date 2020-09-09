@@ -101,5 +101,11 @@ module.exports = ctx => {
             path: '/create-service',
             action: ctx.controllers.front.getMethod('renderCreateService')
         },
+
+        {
+            method:'get',
+            path: '/show',
+            action: ctx.controllers.front.getMethod('renderShowService')
+        },
     ]
 }

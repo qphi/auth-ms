@@ -115,6 +115,38 @@ class MySQLConnector extends Connector {
         }
     }
 
+
+    async getRecord(ms_uuid) {
+        let connexion, record;
+        try {
+            connexion = await this.getConnection();
+            const query = ` 
+            SELECT b.*, a.title, a.icon_src FROM ms_public_data as a
+            JOIN ms_recorded as b 
+            WHERE a.MS_UUID = b.MS_UUID AND a.MS_UUID = ?;
+            `;
+
+            console.log(query);
+            const rows = await connexion.query(query,
+            [
+                ms_uuid
+            ]);
+
+            if (rows && rows.length > 0) {
+                record = rows[0] || null;
+            }
+        }
+
+        catch(error) {
+            console.error(error);
+        }
+
+        finally {
+            this.releaseConnexion(connexion);
+            return record;
+        }
+    }
+
     async record(service) {
         let connexion;
         try {
