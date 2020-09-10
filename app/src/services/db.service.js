@@ -1,5 +1,4 @@
 const ConnectorsAvailables = require('../connectors');
-
 const Connector = require('../connectors/connector.model');
 
 class DBService {
@@ -21,6 +20,19 @@ class DBService {
         }
 
         return this.connectors[connectorName];
+    }
+
+    async getConnexion(connectorName = 'mysql') {
+        console.log('connector', connectorName);
+        /** @type Connector */
+        const connector = this.getConnector(connectorName);
+        return await connector.getConnexion()
+    }
+
+    releaseConnexion(connexion, connectorName = 'mysql') {
+        /** @type Connector */
+        const connector = this.getConnector(connectorName);
+        connector.releaseConnexion(connexion);
     }
 
     loadConnector(connectorName) {

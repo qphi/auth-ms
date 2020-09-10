@@ -2,6 +2,7 @@
 // https://medium.com/the-node-js-collection/making-your-node-js-work-everywhere-with-environment-variables-2da8cdf6e786
 const MicroService = require('../microservice.model');
 const DBService = require('../services/db.service');
+const APIService = require('../services/api.service');
 
 const mock = require('./authenticator.mock');
 
@@ -38,6 +39,11 @@ class AuthenticatorMicroService extends MicroService {
             })
         };
 
+        this.services.api = new APIService({
+            services: {
+                db: this.services.db
+            }
+        });
 
         console.log({
             host: 'smtp.mailtrap.io',

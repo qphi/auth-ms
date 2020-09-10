@@ -1,11 +1,14 @@
-/** @abstract */
+/** @abstract 
+ *  @class Connector
+*/
 class Connector {
     constructor(settings = {}) {
         if (Object.getPrototypeOf(this) === Connector.prototype) {
             throw `Connector is abstract`;
         }
     }
-
+    getConnexion() {}
+    releaseConnexion(connexion) {}
     async record(service) {
         return null;
     }

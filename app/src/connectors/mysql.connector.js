@@ -20,13 +20,14 @@ class MySQLConnector extends Connector {
 
     }
 
-    async getConnection() {
+    async getConnexion() {
         return await this.pool.getConnection();
     }
+    
 
     async createUserTable(connexion, service) {
         try {
-            connexion = await this.getConnection();
+            connexion = await this.getConnexion();
             const query = `CREATE TABLE ${service.name} (email char(64) not null unique, password char(64) not null, role varchar(10) not null, uuid char(36) primary key);`;
             console.log(query, service);
             const rows = await connexion.query(query,
@@ -42,7 +43,7 @@ class MySQLConnector extends Connector {
 
     async addServiceRecorded(connexion, service) {
         try {
-            connexion = await this.getConnection();
+            connexion = await this.getConnexion();
             const query = ` 
             INSERT INTO ms_recorded (
                 DB_TYPE,
@@ -88,7 +89,7 @@ class MySQLConnector extends Connector {
 
     async addServicePublicData(connexion, service) {
         try {
-            connexion = await this.getConnection();
+            connexion = await this.getConnexion();
             const query = ` 
             INSERT INTO ms_public_data (
                 MS_UUID,
@@ -119,7 +120,7 @@ class MySQLConnector extends Connector {
     async getRecord(ms_uuid) {
         let connexion, record;
         try {
-            connexion = await this.getConnection();
+            connexion = await this.getConnexion();
             const query = ` 
             SELECT b.*, a.title, a.icon_src FROM ms_public_data as a
             JOIN ms_recorded as b 
@@ -150,7 +151,7 @@ class MySQLConnector extends Connector {
     async record(service) {
         let connexion;
         try {
-            connexion = await this.getConnection();
+            connexion = await this.getConnexion();
             await this.createUserTable(connexion, service);
             await this.addServiceRecorded(connexion, service);
             await this.addServicePublicData(connexion, service);
@@ -169,7 +170,7 @@ class MySQLConnector extends Connector {
         let uuid = null;
         let connexion;
         try {
-            connexion = await this.getConnection();
+            connexion = await this.getConnexion();
             const rows = await connexion.query(`SELECT uuid FROM ${service.name} WHERE email = ?`, [
                 email
             ]);
@@ -200,7 +201,7 @@ class MySQLConnector extends Connector {
         let user = null;
         let connexion;
         try {
-            connexion = await this.getConnection();
+            connexion = await this.getConnexion();
             const rows = await connexion.query(`SELECT * FROM ${service.name} WHERE email = ? AND password = ?`, [
                 email,
                 password
@@ -228,7 +229,7 @@ class MySQLConnector extends Connector {
         let _uuid = null;
 
         try {
-            connexion = await this.getConnection();
+            connexion = await this.getConnexion();
             _uuid = uuid.v5(userData.email, service.MS_UUID); 
 
             const rows = await connexion.query(`
@@ -267,7 +268,7 @@ class MySQLConnector extends Connector {
         let user = null;
         let connexion;
         try {
-            connexion = await this.getConnection();
+            connexion = await this.getConnexion();
             const rows = await connexion.query(`UPDATE ${service.name} SET password = ? WHERE uuid = ?`, [
                 newPassword,
                 uuid

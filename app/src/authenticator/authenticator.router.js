@@ -104,8 +104,15 @@ module.exports = ctx => {
 
         {
             method:'get',
-            path: '/show',
+            path: '/records/:ms_uuid',
             action: ctx.controllers.front.getMethod('renderShowService')
+        },
+
+
+        {
+            method:'get',
+            path: '/records',
+            action: ctx.controllers.front.getMethod('renderListServices')
         },
     ]
 }

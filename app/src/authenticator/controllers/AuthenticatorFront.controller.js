@@ -34,11 +34,32 @@ class AuthenthicatorFrontController extends BaseController {
         });
     }
 
+
+    async renderListServices(request, response) {
+        const apps = await this.services.api.listAllServices();
+        response.render('admin/list-services', {
+            apps: apps
+            // service_name: service.name,
+            // service_img: service.ICON_SRC
+        });
+    }
+
     async renderShowService(request, response) {
-        const ms_uuid = '46487d3b-0d30-5161-9792-ca9eb1558b9d';
+        const ms_uuid = request.params.ms_uuid;
+        console.log('ms_uuid', ms_uuid);
+
         const record = await this.services.db.getRecord(ms_uuid);
         console.log(record);
-        response.render('admin/show-service', record);
+        try {
+
+            response.render('admin/show-service', {
+                app: record
+            });
+        }
+
+        catch(e) {
+            console.log('aa');
+        }
     }
 };
 

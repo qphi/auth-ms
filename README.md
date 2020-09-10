@@ -130,3 +130,9 @@ POST /register
 # DevStack
 ## How to ?
 - [Send email in dev](https://stackabuse.com/how-to-send-emails-with-node-js/)
+
+## todo
+- Support RSA key pair to sign and verify jwt in order to increase security and prevent rewrite jwt by other services
+- Add and store a salt and use it to sign all password and eventually some secrets
+- fix cannot load img store on aws s3
+- test SQL injection
