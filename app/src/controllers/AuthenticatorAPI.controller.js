@@ -1,43 +1,63 @@
-const BaseController = require('../../BaseController.controller');
+const { BaseController } = require('micro');
 const sha256 = require('sha256');
 const crypto = require('crypto');
 const uuid = require('uuid');
 
+const MissingRefreshTokenException = require('../Exceptions/MissingRefreshToken.exception');
+const InvalidTokenException = require('../Exceptions/InvalidToken.exception');
+const JsonWebTokenError = require('jsonwebtoken/lib/JsonWebTokenError');
+
+
 class AuthenthicatorAPIController extends BaseController {
     constructor(settings = { services : {} }) {
         super(settings);
+
+        this.api = {
+            requestAdapter: settings.requestAdapter || require('../API/request.helper')
+        };
+
+        this.spi = {
+            jwtPeristence: settings.jwtPeristence || require('../SPI/RedisJWTPersistance.service')
+        }
+
+        this.services.jwt = settings.services.jwt;
     }
 
-    async generateNewAccessToken(request, response) {
-        const service = request.service;
-        const refresh = this.getCookie(request, service.COOKIE_JWT_REFRESH_NAME);
-        
-        if (refresh === null) {
-            return response.sendStatus(401);
-        }
     
-        if (await this.services.jwt.hasRefreshToken(refresh)) {
-            return response.sendStatus(403);
-        }
-    
-        let user = null;
-        
+    async generateIdentityToken(request, response) {
         try {
-            user = this.services.jwt.verify(refresh, service.JWT_SECRET_REFRESHTOKEN);
+            const refreshToken = await this.services.jwt.getRefreshToken(request);
+            const refreshTokenSecret = this.api.requestAdapter.getRefreshTokenSecret(request);
+            const user = this.services.jwt.verify(refreshToken, refreshTokenSecret);
+            const userData = { username: user._id,  role: user.role };
+
+            const clientSettings = this.services.jwt.getClientSettings(request);
+
+            const identityToken = this.services.jwt.sign(
+                userData, 
+                clientSettings.JWT_SECRET_ACCESSTOKEN, 
+                clientSettings.JWT_ACCESS_TTL
+            );
+    
+            this.setJWTAccess(response, clientSettings, identityToken);
+        }   
+        
+        catch(error) {
+            if (error instanceof MissingRefreshTokenException) {
+                return response.sendStatus(401);
+            }
+
+            else if (
+                error instanceof InvalidTokenException ||
+                error instanceof JsonWebTokenError
+            ) {
+                return response.sendStatus(403);
+            }
+
+            else {
+                return response.sendStatus(500);
+            }
         }
-
-        catch (err) {
-            return response.sendStatus(403);
-        }
-
-        const userData = { username: user.username,  role: user.role };
-        const newAccess = this.services.jwt.sign(
-            userData, 
-            service.JWT_SECRET_ACCESSTOKEN, 
-            service.JWT_ACCESS_TTL
-        );
-
-        this.setJWTAccess(response, service, newAccess);
     }
 
 

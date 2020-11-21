@@ -1,4 +1,4 @@
-const MicroService = require('./microservice.model');
+const { MicroService } = require('micro');
 const jwt = require('jsonwebtoken');
 
 class JWTMicroService extends MicroService {

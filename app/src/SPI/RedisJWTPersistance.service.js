@@ -1,10 +1,11 @@
-const redis = require('redis');
-const jwt = require('jsonwebtoken');
 
-const day_in_ms = 864000000;
-const _6hours = 21600000;
 
-class JWTAuthoringService {
+const { Singleton } = require('micro'); 
+
+/**
+ * @implements {JWTPersistenceInterface}
+ */
+class RedisJWTPersistence {
     constructor(settings) {
         this.redis = redis.createClient({
             port: settings.REDIS_PORT || process.env.REDIS_PORT, 
@@ -13,7 +14,11 @@ class JWTAuthoringService {
         });
     }
 
-    hasRefreshToken(refreshToken) {
+    /**
+     * 
+     * @param {string} refreshToken 
+     */
+    hasRefreshToken(refreshToken = '') {
         return new Promise((resolve, reject) => {
             this.redis.get(refreshToken, (err, value) => {
                 if (err) {
@@ -82,26 +87,6 @@ class JWTAuthoringService {
             });
         });
     }
-    
-    sign(data, secret, ttl) {
-        return jwt.sign(data, secret,         
-            ttl ? { expiresIn: ttl + 'ms' } : {}
-        );
-    }
-
-    verify(token, secret) {
-        return new Promise((resolve, reject) => {
-            jwt.verify(token, secret, (err, user) => {
-                if (err) {
-                    reject(err);
-                }
-
-                else {
-                    resolve(user);
-                }
-            });
-        });
-    }
 }
 
-module.exports = JWTAuthoringService;
+module.exports = Singleton.create(RedisJWTPersistence);

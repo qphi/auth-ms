@@ -1,4 +1,4 @@
-const BaseController = require("../../BaseController.controller");
+const { BaseController } = require('micro');
 
 class AuthenthicatorFrontController extends BaseController {
     constructor(settings = { services : {} }) {
