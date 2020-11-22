@@ -1,12 +1,13 @@
 
 
 const { Singleton } = require('micro'); 
+const redis = require('redis');
 
 /**
  * @implements {JWTPersistenceInterface}
  */
 class RedisJWTPersistence {
-    constructor(settings) {
+    constructor(settings = {}) {
         this.redis = redis.createClient({
             port: settings.REDIS_PORT || process.env.REDIS_PORT, 
             host: settings.REDIS_HOST || process.env.REDIS_HOST, 
@@ -72,6 +73,10 @@ class RedisJWTPersistence {
                 }
             });
         });
+    }
+
+    clearRefreshToken(request) {
+        
     }
 
     deleteToken(refreshToken) {

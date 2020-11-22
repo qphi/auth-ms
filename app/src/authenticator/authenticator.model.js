@@ -11,18 +11,15 @@ const recordedRoutes = require('./authenticator.router');
 const express = require('express');
 
 
-const JWTService = require('../services/jwt.service');
-
-
-const AuthenticatorAPIController = require('../controllers/AuthenticatorAPI.controller');
-const AuthenticatorFrontController = require('../controllers/AuthenticatorFront.controller');
-
+const CoreController = require('../controllers/core.controller');
+const BackOfficeController = require('../controllers/back-office.controller');
 
 class AuthenticatorMicroService extends MicroService {
     constructor(settings = {}) {
         super(settings);
 
         const container = require('../DependancyInjection');
+
         this.state = {
             db: null
         };
@@ -58,12 +55,12 @@ class AuthenticatorMicroService extends MicroService {
 
         const router = recordedRoutes({
             controllers: {
-                api: new AuthenticatorAPIController({
+                core: new CoreController({
                     ...container,
                     services: this.services
                 }),
 
-                front: new AuthenticatorFrontController({
+                bo: new BackOfficeController({
                     services: this.services
                 })
             }
@@ -89,6 +86,7 @@ class AuthenticatorMicroService extends MicroService {
     initializeDBConnexion(db_type) {
         const credentials = {};
 
+    
         switch(db_type) {
             case DBHelper.DB_TYPE.DYNAMO:
                 credentials.accessKeyId = process.env.DYNAMO_ACCESS_KEY_ID
@@ -97,6 +95,7 @@ class AuthenticatorMicroService extends MicroService {
             break;
         }
 
+        console.log(credentials)
         this.state.db = DBHelper.connect(db_type, credentials);
     }
 }

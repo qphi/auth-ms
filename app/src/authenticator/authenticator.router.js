@@ -16,7 +16,7 @@ module.exports = ctx => {
 
             ],
             
-            action: ctx.controllers.api.getMethod('onLogin')
+            action: ctx.controllers.core.getMethod('onLogin')
         },
         
         // https://stackoverflow.com/questions/3521290/logout-get-or-post#:~:text=The%20post%20should%20be%20used,page%20with%20a%20logout%20GET).
@@ -25,14 +25,14 @@ module.exports = ctx => {
             method: 'post',
             path: '/api/logout',
             middlewares: [ RetrieveServiceMiddleware ],
-            action: ctx.controllers.api.getMethod('onLogout')
+            action: ctx.controllers.core.getMethod('onLogout')
         }, 
 
         {
             method:'get',
             path: '/api/token',
             middlewares: [ RetrieveServiceMiddleware ],
-            action: ctx.controllers.api.getMethod('generateNewAccessToken')
+            action: ctx.controllers.core.getMethod('generateIdentityToken')
         },
 
         {
@@ -43,7 +43,7 @@ module.exports = ctx => {
                 RetrieveServiceMiddleware 
             ],
             
-            action: ctx.controllers.api.getMethod('onRegister')
+            action: ctx.controllers.core.getMethod('onRegister')
         },
 
         {
@@ -54,7 +54,7 @@ module.exports = ctx => {
                 EmailIsValid
             ],
 
-            action: ctx.controllers.api.getMethod('onForgotPassword')
+            action: ctx.controllers.core.getMethod('onForgotPassword')
         },
 
         {
@@ -65,7 +65,7 @@ module.exports = ctx => {
                 RetrieveServiceMiddleware
             ],
 
-            action: ctx.controllers.api.getMethod('onResetPassword')
+            action: ctx.controllers.core.getMethod('onResetPassword')
         },
 
         {
@@ -73,7 +73,7 @@ module.exports = ctx => {
             path: '/api/create-service',
             middlewares: [],
 
-            action: ctx.controllers.api.getMethod('onCreateService')
+            action: ctx.controllers.core.getMethod('onCreateService')
         },
 
 
@@ -87,32 +87,32 @@ module.exports = ctx => {
                 RetrieveServiceMiddleware
             ],
 
-            action: ctx.controllers.front.getMethod('renderForgetPassword')
+            action: ctx.controllers.bo.getMethod('renderForgetPassword')
         },
 
         {
             method:'get',
             path: '/login',
-            action: ctx.controllers.front.getMethod('renderLogin')
+            action: ctx.controllers.bo.getMethod('renderLogin')
         },
 
         {
             method:'get',
             path: '/create-service',
-            action: ctx.controllers.front.getMethod('renderCreateService')
+            action: ctx.controllers.bo.getMethod('renderCreateService')
         },
 
         {
             method:'get',
             path: '/records/:ms_uuid',
-            action: ctx.controllers.front.getMethod('renderShowService')
+            action: ctx.controllers.bo.getMethod('renderShowService')
         },
 
 
         {
             method:'get',
             path: '/records',
-            action: ctx.controllers.front.getMethod('renderListServices')
+            action: ctx.controllers.bo.getMethod('renderListServices')
         },
     ]
 }

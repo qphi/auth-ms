@@ -6,24 +6,41 @@ const uuid = require('uuid');
 const MissingRefreshTokenException = require('../Exceptions/MissingRefreshToken.exception');
 const InvalidTokenException = require('../Exceptions/InvalidToken.exception');
 const JsonWebTokenError = require('jsonwebtoken/lib/JsonWebTokenError');
+const UserPersistenceInterface = require('../SPI/User/UserPersistence.interface');
+const JWTPersistenceInterface = require('../SPI/JWT/JWTPersistence.interface');
 
+const { param } = require('../dev.application-state');
 
-class AuthenthicatorAPIController extends BaseController {
+class CoreController extends BaseController {
     constructor(settings = { services : {} }) {
         super(settings);
 
         this.api = {
-            requestAdapter: settings.requestAdapter || require('../API/request.helper')
+            requestAdapter: settings.requestAdapter || require('../API/request.helper'),
+            /** @type {ResponseHelper} */
+            responseHelper: settings.responseAdapter,
+            /** @type {UserRequestHelper} */
+            userRequestHelper: settings.userRequestAdapter
         };
 
         this.spi = {
-            jwtPeristence: settings.jwtPeristence || require('../SPI/RedisJWTPersistance.service')
+            /** @type {JWTPersistenceInterface} */
+            jwtPeristence: settings.jwtPeristence || require('../SPI/JWT/RedisJWTPersistence.service'),
+            /** @type {UserPersistenceInterface} */
+            userPersistence: settings.userPersistence,
+            /** @type {CustomerApplicationPersistenceInterface} */
+            customerApplicationPersistence: settings.customerApplicationPersistence
         }
 
         this.services.jwt = settings.services.jwt;
     }
 
     
+    /**
+     * Forge an identity token. A valid refresh token must be providen
+     * @param {Request} request 
+     * @param {Response} response 
+     */
     async generateIdentityToken(request, response) {
         try {
             const refreshToken = await this.services.jwt.getRefreshToken(request);
@@ -33,13 +50,15 @@ class AuthenthicatorAPIController extends BaseController {
 
             const clientSettings = this.services.jwt.getClientSettings(request);
 
-            const identityToken = this.services.jwt.sign(
-                userData, 
-                clientSettings.JWT_SECRET_ACCESSTOKEN, 
-                clientSettings.JWT_ACCESS_TTL
-            );
+            const identityToken = this.services.jwt.forgeIdentityToken(userData, clientSettings);
     
-            this.setJWTAccess(response, clientSettings, identityToken);
+            this.api.responseHelper.addIdentityToken(
+                response, 
+                clientSettings, 
+                identityToken
+            );
+
+            return response.sendStatus(200);
         }   
         
         catch(error) {
@@ -60,56 +79,29 @@ class AuthenthicatorAPIController extends BaseController {
         }
     }
 
-
-    async clearJWT(request, response) {
-        const service = request.service;
-        const access = this.getCookie(request, service.COOKIE_JWT_REFRESH_NAME);
-        if (access !== null) {
-            await this.services.jwt.deleteToken(access);    
-        }
-
-        response.clearCookie(service.COOKIE_JWT_ACCESS_NAME);
-        response.clearCookie(service.COOKIE_JWT_REFRESH_NAME);
-    }
-
-    setJWTAccess(response, service, access, send = true) {
-        response.cookie(
-            service.COOKIE_JWT_ACCESS_NAME, 
-            access, 
-            { 
-                httpOnly: true, 
-                maxAge: service.JWT_ACCESS_TTL
-            }
-        );
-    }
-
-    setJWTRefresh(response, service, refresh, send = true) {
-        response.cookie(
-            service.COOKIE_JWT_REFRESH_NAME, 
-            refresh, 
-            { 
-                httpOnly: true, 
-                maxAge: 86400000 // 1 day
-            }
-        );
-
-        if (send === true) {
-            response.sendStatus(200);
-        }
-    }
-
     async onLogout(request, response) {
-        await this.clearJWT(request, response);
-        response.send("Logout successful");
+        try {
+            await this.services.jwt.clear(request, response);
+            response.send("Logout successful");
+        }
+
+        catch(error) {
+            response.sendStatus(500);
+        }
+       
     }
-
-
 
     async onLogin(request, response) {
-        const service = request.service;
+        const clientSettings = this.services.jwt.getClientSettings(request);
         // Read username and password from request body
-        const { email, password } = request.user;
-        const user = await this.services.db.findUser(email, password, service);
+        const email = this.api.userRequestAdapter.getEmail(request);
+        const password = this.api.userRequestAdapter.getPassword(request);
+        
+        const user = await this.spi.userPersistence.findByCredentials(
+            email, 
+            password, 
+            clientSettings
+        );
     
         // Filter user from the users array by username and password
         //const user = mock.users.find(u => { return u.username === username && u.password === password });
@@ -117,34 +109,28 @@ class AuthenthicatorAPIController extends BaseController {
         if (user !== null) {
             // Generate an access token
             const userData = { username: user.username,  role: user.role };
-            const accessToken = this.services.jwt.sign(
-                userData, 
-                service.JWT_SECRET_ACCESSTOKEN,
-                service.JWT_ACCESS_TTL
-            );
+            
+            const {identityToken, refreshToken} = this.services.jwt.forgeToken(userData, clientSettings);
+            
+            this.spi.jwtPeristence.storeRefreshToken(refreshToken);
 
-            const refreshToken = this.services.jwt.sign(
-                userData, 
-                service.JWT_SECRET_REFRESHTOKEN
-            );
+            this.api.responseHelper.addIdentityToken(response, clientSettings, identityToken, false);
+            this.api.responseHelper.adddRefreshToken(response, clientSettings, refreshToken, false);
 
-            this.services.jwt.storeRefreshToken(refreshToken);
-        
-            this.setJWTAccess(response, service, accessToken, false);
-            this.setJWTRefresh(response, service, refreshToken);
-            return;
+            return response.sendStatus(200);
         } 
         
         else {
             // We dont now anything about user context. Clear bad JWT cookies if founds
-            await this.clearJWT(request, response);
+            await this.services.jwt.clear(request, response);
 
             response.send('Username or password incorrect');
         }
     }
 
     async onRegister(request, response) {
-        const { email, password, confirmPassword } = request.body;
+        const email = this.api.userRequestAdapter.getEmail(request);
+        const { password, confirmPassword } = request.body;
 
         if (
             typeof confirmPassword !== 'string'
@@ -159,11 +145,17 @@ class AuthenthicatorAPIController extends BaseController {
         const responseMessage = {}
 
         try {
-            responseMessage.user_id = await this.services.db.createUser({
+            const clientSettings =  this.services.jwt.getClientSettings(request);
+            const userData = {
                 email: sha256(email), 
                 password: sha256(password),
                 role: 'member' 
-            }, request.service);
+            };
+
+            responseMessage.user_id = await this.spi.userPersistence.create(
+                userData, 
+                clientSettings
+            );
 
 
             if (responseMessage.user_id !== null) {
@@ -190,67 +182,69 @@ class AuthenthicatorAPIController extends BaseController {
     }
 
     async onForgotPassword(request, response) {
-        const email = request.body.email;
-        const service = request.service;
+        const email = this.api.userRequestAdapter.getEmail(request);
+        const clientSettings =  this.services.jwt.getClientSettings(request);
 
-        const uuid = await this.services.db.getUserUUID(sha256(email), service);
+        const uuid = await this.spi.userPersistence.getUserUUID(
+            sha256(email), 
+            clientSettings
+        );
 
         if (uuid === null) {
             return response.sendStatus(200);
         }
 
         const now = Date.now();
-        const expire = now + _6hours;
+        const forgotPasswordTTL = param.forgotPasswordTokenTTL;
+        const expire = now + forgotPasswordTTL;
 
         const data = {
             user_uuid: uuid, 
-            service_uuid: service.MS_UUID, 
+            service_uuid: clientSettings.MS_UUID, 
             created_at: now, 
             expire_at: expire
         };
 
-        const token = this.services.jwt.sign(
-            data,
-            service.JWT_SECRET_FORGOTPASSWORDTOKEN,
-            _6hours
-        );
+        const forgotPasswordToken = this.services.jwt.forgotPasswordToken(data);
 
-        await this.services.jwt.storeForgotPasswordToken(token, data);
+        await this.services.jwt.storeForgotPasswordToken(forgotPasswordToken, data);
 
 
-        this.services.mailer.sendMail({
-            from: 'authenticator-service@tesla.com', // Sender address
-            to: email,         // List of recipients
-            subject: 'Forgot Password', // Subject line
-            text: `
-                to reset your password please follow this link : ${this.getResetPasswordURL(service)}?token=${token}
-            ` // Plain text body
-        }, 
+        // emit event => SQS ?
+        // this.services.mailer.sendMail({
+        //     from: 'authenticator-service@tesla.com', // Sender address
+        //     to: email,         // List of recipients
+        //     subject: 'Forgot Password', // Subject line
+        //     text: `
+        //         to reset your password please follow this link : ${this.getResetPasswordURL(service)}?token=${token}
+        //     ` // Plain text body
+        // }, 
         
-        (err, info) => {
-            if (err) {
-              console.log(err)
-            } else {
-              console.log(info);
-            }
-        });
-        console.log(token);
+        // (err, info) => {
+        //     if (err) {
+        //       console.log(err)
+        //     } else {
+        //       console.log(info);
+        //     }
+        // });
 
-        response.json(token);
+        console.log('forgotPasswordToken', forgotPasswordToken);
+
+        response.json(forgotPasswordToken);
     }
 
     async onResetPassword(request, response) {
-        const service = request.service;
-        const token = request.body.token;
+        const clientSettings =  this.services.jwt.getClientSettings(request);
+        const forgotPasswordToken = request.body.token;
         const password = request.body.password;
 
         let tokenData = null;
 
         // check if token is valid
         try {
-            tokenData = await this.services.jwt.verify(token, service.JWT_SECRET_FORGOTPASSWORDTOKEN);
-            await this.services.jwt.deleteToken(token);
-            await this.clearJWT();
+            tokenData = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, clientSettings);
+            //await this.spi.jwtPeristence.deleteToken(forgotPasswordToken);    
+            await this.services.jwt.clear(request, response);
         }
 
         catch(err) {
@@ -258,7 +252,7 @@ class AuthenthicatorAPIController extends BaseController {
         }
 
         // check integrity by retrieve it from our token storage
-        const storedTokenData = await this.services.jwt.getForgotPasswordToken(token);
+        const storedTokenData = await this.spi.jwtPeristence.getForgotPasswordToken(forgotPasswordToken);
 
         if (storedTokenData === null) {
             return response.sendStatus(401);
@@ -279,15 +273,19 @@ class AuthenthicatorAPIController extends BaseController {
         else {
             // everything seems ok, just update the password
             const user_uuid = storedTokenData.user_uuid;
-            await this.services.db.updateUserPassword(user_uuid, sha256(password), service);
+            await this.spi.userPersistence.updateUserPassword(
+                user_uuid, 
+                sha256(password), 
+                service
+            );
         }
         
         return response.sendStatus(200);
     }
 
-    getResetPasswordURL(service) {
-        if (service.FORGOT_PASSWORD_URL) {
-            return service.FORGOT_PASSWORD_URL;
+    getResetPasswordURL(clientSettings) {
+        if (clientSettings.FORGOT_PASSWORD_URL) {
+            return clientSettings.FORGOT_PASSWORD_URL;
         }
 
         else {
@@ -314,12 +312,11 @@ class AuthenthicatorAPIController extends BaseController {
             COOKIE_JWT_REFRESH_NAME: sha256(`jwt-${name}-refresh-cookie-${SALT}`),
             SALT
         }
-
         
-        await this.services.db.record(settings);
+        await this.spi.customerApplicationPersistence.create(settings);
 
         return response.sendStatus(200);
     }
 };
 
-module.exports = AuthenthicatorAPIController;
+module.exports = CoreController;

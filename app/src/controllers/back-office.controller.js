@@ -1,6 +1,6 @@
 const { BaseController } = require('micro');
 
-class AuthenthicatorFrontController extends BaseController {
+class BackOfficeController extends BaseController {
     constructor(settings = { services : {} }) {
         super(settings);
     }
@@ -63,4 +63,4 @@ class AuthenthicatorFrontController extends BaseController {
     }
 };
 
-module.exports = AuthenthicatorFrontController;
+module.exports = BackOfficeController;
