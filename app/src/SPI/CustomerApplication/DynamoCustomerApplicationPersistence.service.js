@@ -1,16 +1,13 @@
-
-
-const { Singleton } = require('micro'); 
 const { DynamoProvider, ResourceModelFactory } = require('rest-api');
 
 /**
  * @implements {CustomerApplicationPersistenceInterface}
  */
 class DynamoCustomerApplicationPersistence extends DynamoProvider {
-    constructor() {
+    constructor(context) {
         super(
             ResourceModelFactory.fromSchema(
-                'customer-application',
+                context.entity.ms_recorded,
                 require('../../Domain/User/user.schema'),
                 'dynamo'
             ),
@@ -22,4 +19,4 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
     }
 }
 
-module.exports = Singleton.create(DynamoCustomerApplicationPersistence);
+module.exports = DynamoCustomerApplicationPersistence;

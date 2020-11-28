@@ -18,7 +18,10 @@ class AuthenticatorMicroService extends MicroService {
     constructor(settings = {}) {
         super(settings);
 
-        const container = require('../DependancyInjection');
+
+
+        // const container = require('../DependancyInjection');
+        const container = this.loadContainer(settings.config);
 
         this.state = {
             db: null
@@ -94,9 +97,31 @@ class AuthenticatorMicroService extends MicroService {
                 credentials.region = process.env.DYNAMO_REGION;
             break;
         }
-
-        console.log(credentials)
+        
         this.state.db = DBHelper.connect(db_type, credentials);
+    }
+
+    loadContainer(configPath) {
+        const config = { ...require(configPath) };
+        const factoriesRecorded = config.factory;
+
+        delete config.factory;
+
+        let container = config;
+        
+        Object.keys(factoriesRecorded).forEach(section => {
+            if (typeof container[section] === 'undefined') {
+                container[section] = {};
+            }
+
+            const factories = factoriesRecorded[section];
+            Object.keys(factories).forEach(factoryName => {
+                const factory = factories[factoryName];
+                container[section][factoryName] = factory(container);
+            })
+        });
+
+        return container;
     }
 }
 

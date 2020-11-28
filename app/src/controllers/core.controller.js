@@ -16,20 +16,20 @@ class CoreController extends BaseController {
         super(settings);
 
         this.api = {
-            requestAdapter: settings.requestAdapter || require('../API/request.helper'),
+            requestAdapter: settings.api.requestAdapter || require('../API/request.helper'),
             /** @type {ResponseHelper} */
-            responseHelper: settings.responseAdapter,
+            responseHelper: settings.api.responseAdapter,
             /** @type {UserRequestHelper} */
-            userRequestHelper: settings.userRequestAdapter
+            userRequestAdapter: settings.api.userRequestAdapter
         };
 
         this.spi = {
             /** @type {JWTPersistenceInterface} */
-            jwtPeristence: settings.jwtPeristence || require('../SPI/JWT/RedisJWTPersistence.service'),
+            jwtPeristence: settings.spi.jwtPeristence,
             /** @type {UserPersistenceInterface} */
-            userPersistence: settings.userPersistence,
+            userPersistence: settings.spi.userPersistence,
             /** @type {CustomerApplicationPersistenceInterface} */
-            customerApplicationPersistence: settings.customerApplicationPersistence
+            customerApplicationPersistence: settings.spi.customerApplicationPersistence
         }
 
         this.services.jwt = settings.services.jwt;
@@ -164,7 +164,6 @@ class CoreController extends BaseController {
         }
 
         catch (error) {
-            console.error(error);
             if (error.name === 'UserAlreadyExistsException') {
                 responseMessage.message = 'An account using this email was found';
             }

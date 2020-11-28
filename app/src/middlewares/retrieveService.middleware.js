@@ -6,7 +6,6 @@ module.exports = (request, response, next) => {
     const service = services[app] || null;
 
     if (service === null) {
-        console.log('invalid service');
         response.sendStatus(401);
     }
 

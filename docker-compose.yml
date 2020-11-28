@@ -1,23 +1,10 @@
 #https://docs.docker.com/compose/environment-variables/
 #https://openclassrooms.com/fr/courses/2035766-optimisez-votre-deploiement-en-creant-des-conteneurs-avec-docker/6211677-creez-un-fichier-docker-compose-pour-orchestrer-vos-conteneurs
 
-version: '3'
+version: '3.8'
 
 #docker run --env-file=FILE ...
-services:
-  db:
-    image: mariadb:latest
-    ports:
-      - "${DB_PORT}:3306"
-    volumes:
-      - db_data:/var/lib/mysql
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-  
+services:  
   redis:
     image: redis:latest
     ports:
@@ -26,8 +13,8 @@ services:
     hostname: redis
     networks:
       - redis-net
-    volumes:
-      - redis-data:/data
+    # volumes:
+    #   - redis-data:/data
     restart: always
 
 
@@ -37,4 +24,3 @@ networks:
 
 volumes:
   redis-data:
-  db_data:

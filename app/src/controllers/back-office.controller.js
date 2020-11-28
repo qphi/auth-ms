@@ -46,10 +46,10 @@ class BackOfficeController extends BaseController {
 
     async renderShowService(request, response) {
         const ms_uuid = request.params.ms_uuid;
-        console.log('ms_uuid', ms_uuid);
+    
 
         const record = await this.services.db.getRecord(ms_uuid);
-        console.log(record);
+    
         try {
 
             response.render('admin/show-service', {

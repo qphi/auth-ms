@@ -136,3 +136,6 @@ POST /register
 - Add and store a salt and use it to sign all password and eventually some secrets
 - fix cannot load img store on aws s3
 - test SQL injection
+
+- delete by id & kind for DynamoJWTPersister (should update rest api, all providers)
+- dynamo: in case of ConditionalCheckFailedException on create, make an additionnal request in order to verify is user already exists

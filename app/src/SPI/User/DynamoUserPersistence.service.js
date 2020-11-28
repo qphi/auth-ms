@@ -1,22 +1,20 @@
-
-
-const { Singleton } = require('micro'); 
 const { DynamoProvider, ResourceModelFactory } = require('rest-api');
+const UserAlreadyExistsException = require('../../Exceptions/UserAlreadyExists.exception');
 
 /**
  * @implements {UserPersistenceInterface}
  */
 class DynamoUserPersistence extends DynamoProvider {
-    constructor() {
+    constructor(context) {
         super(
             ResourceModelFactory.fromSchema(
-                'user',
+                context.entity.user,
                 require('../../Domain/User/user.schema'),
                 'dynamo'
             ),
 
             {
-                id: 'uuid'
+                id: 'user_uuid'
             }
         );
     }
@@ -45,8 +43,18 @@ class DynamoUserPersistence extends DynamoProvider {
      * @param {Mixed} clientSettings 
      */
     async create(userData, clientSettings) {
+        let success = false;
         userData.application_uuid = clientSettings.MS_UUID;
-        super.create(userData);
+
+        try {
+            await super.create(userData);
+            success = true;
+        }
+
+        catch(error) {
+            throw new UserAlreadyExistsException();
+        }
+       
     }
 
     async updatePassword(uuid, newPassword, service) {
@@ -64,4 +72,4 @@ class DynamoUserPersistence extends DynamoProvider {
     }
 }
 
-module.exports = Singleton.create(DynamoUserPersistence);
+module.exports = DynamoUserPersistence;

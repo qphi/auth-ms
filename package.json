@@ -3,8 +3,17 @@
   "private": true,
   "version": "0.1.1",
   "description": "auth-ms",
-  "scripts": {},
-  "devDependencies": {},
+  "scripts": {
+    "dev": "cross-env NODE_ENV=dev node ./app",
+    "test": "mocha --timeout 50000"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.799.0",
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "cross-env": "^7.0.2",
+    "mocha": "^8.2.1"
+  },
   "dependencies": {
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",

@@ -4,6 +4,7 @@ const RetrieveServiceMiddleware = require('../middlewares/retrieveService.middle
 const RetrieveUserMiddleware = require('../middlewares/retrieveUser.middleware');
 const ConfirmPasswordConstraint = require('../middlewares/confirmPassword.middleware');
 const EmailIsValid = require('../middlewares/emailIsValid.constraint.middleware');
+const PasswordIsNotTooWeakConstraint = require('../middlewares/passwordIsNotTooWeak.constraint.middleware');
 
 module.exports = ctx => {
     return [
@@ -40,7 +41,10 @@ module.exports = ctx => {
             path: '/api/register',
             middlewares: [ 
                 ConfirmPasswordConstraint,
-                RetrieveServiceMiddleware 
+                EmailIsValid,
+                PasswordIsNotTooWeakConstraint,
+                RetrieveServiceMiddleware ,
+                RetrieveUserMiddleware
             ],
             
             action: ctx.controllers.core.getMethod('onRegister')

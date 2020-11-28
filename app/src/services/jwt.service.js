@@ -16,7 +16,6 @@ class JWTService {
             jwtPeristence: settings.spi.jwtPeristence
         }
 
-        console.log(settings)
         this.domain = {
             jwt: settings.domain.jwt
         };

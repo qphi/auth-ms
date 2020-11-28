@@ -5,19 +5,21 @@ const api = {
 };
 
 const spi = {
-    jwtPeristence: require('./SPI/JWT/RedisJWTPersistence.service'),
+    jwtPeristence: require('./SPI/JWT/DynamoJWTPersistence.service'),
     userPersistence: require('./SPI/User/DynamoUserPersistence.service'),
     customerApplicationPersistence: require('./SPI/CustomerApplication/DynamoCustomerApplicationPersistence.service') 
 };
 
 const JWTService = require('./services/jwt.service');
 
-const _6hours = 518400000;
 const domain = require('./dev.application-state');
 
-console.log('hello');
 module.exports = {
     services: {
         jwt: new JWTService({ api, spi, domain })
-    }
+    },
+
+    domain,
+    api, 
+    spi
 };
