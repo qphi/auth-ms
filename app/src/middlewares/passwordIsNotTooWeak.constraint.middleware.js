@@ -1,3 +1,5 @@
+const STATUS_CODE = require('../../config/status-code.config');
+
 module.exports = (request, response, next) => {
     const password = request.body.password;
 
@@ -11,9 +13,9 @@ module.exports = (request, response, next) => {
 
     else {
         response.status(200).send({
-            message: 'Password must have at leat 8 characters',
-            error: 'Password too weak',
-            status: 'aborted'
+            message: STATUS_CODE.PASSWORD_TOO_WEAK,
+            error: false,
+            status: STATUS_CODE.PROCESS_ABORTED
         });
     }
 }

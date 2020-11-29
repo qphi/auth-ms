@@ -43,7 +43,7 @@ module.exports = ctx => {
                 ConfirmPasswordConstraint,
                 EmailIsValid,
                 PasswordIsNotTooWeakConstraint,
-                RetrieveServiceMiddleware ,
+                RetrieveServiceMiddleware,
                 RetrieveUserMiddleware
             ],
             

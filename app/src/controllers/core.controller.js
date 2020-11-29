@@ -9,6 +9,8 @@ const JsonWebTokenError = require('jsonwebtoken/lib/JsonWebTokenError');
 const UserPersistenceInterface = require('../SPI/User/UserPersistence.interface');
 const JWTPersistenceInterface = require('../SPI/JWT/JWTPersistence.interface');
 
+const STATUS_CODE = require('../../config/status-code.config');
+
 const { param } = require('../dev.application-state');
 
 class CoreController extends BaseController {
@@ -96,8 +98,7 @@ class CoreController extends BaseController {
         // Read username and password from request body
         const email = this.api.userRequestAdapter.getEmail(request);
         const password = this.api.userRequestAdapter.getPassword(request);
-        
-        const user = await this.spi.userPersistence.findByCredentials(
+       const user = await this.spi.userPersistence.findByCredentials(
             email, 
             password, 
             clientSettings
@@ -115,22 +116,31 @@ class CoreController extends BaseController {
             this.spi.jwtPeristence.storeRefreshToken(refreshToken);
 
             this.api.responseHelper.addIdentityToken(response, clientSettings, identityToken, false);
-            this.api.responseHelper.adddRefreshToken(response, clientSettings, refreshToken, false);
+            this.api.responseHelper.addRefreshToken(response, clientSettings, refreshToken, false);
 
-            return response.sendStatus(200);
+            return response.status(200).send({
+                message: STATUS_CODE.LOGIN_SUCCESSFUL,
+                error: STATUS_CODE.NO_ERROR,
+                status: STATUS_CODE.PROCESS_DONE
+            });
         } 
         
         else {
             // We dont now anything about user context. Clear bad JWT cookies if founds
             await this.services.jwt.clear(request, response);
 
-            response.send('Username or password incorrect');
+            response.status(401).send({
+                message: STATUS_CODE.BAD_CREDENTIALS,
+                error: STATUS_CODE.NO_ERROR,
+                status: STATUS_CODE.PROCESS_DONE
+            });
         }
     }
 
     async onRegister(request, response) {
         const email = this.api.userRequestAdapter.getEmail(request);
-        const { password, confirmPassword } = request.body;
+        const password = this.api.userRequestAdapter.getPassword(request);
+        const confirmPassword = this.api.userRequestAdapter.getConfirmPassword(request);
 
         if (
             typeof confirmPassword !== 'string'
@@ -147,8 +157,8 @@ class CoreController extends BaseController {
         try {
             const clientSettings =  this.services.jwt.getClientSettings(request);
             const userData = {
-                email: sha256(email), 
-                password: sha256(password),
+                email: email, 
+                password: password,
                 role: 'member' 
             };
 

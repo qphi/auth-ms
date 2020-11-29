@@ -16,6 +16,10 @@ module.exports = (request, response, next) => {
             request.user = {};
         }
 
+        if (typeof  request.body.confirmPassword !== 'undefined') {
+            request.user.confirmPassword = sha256(request.body.confirmPassword);
+        }
+
         request.user.email = sha256(email);
         request.user.password = sha256(password);
         next();

@@ -43,8 +43,8 @@ class ResponseHelper {
     }
 
     removeTokens(response, clientSettings) {
-        this.api.responseHelper.removeRefreshToken(response, clientSettings);
-        this.api.responseHelper.removeIdentityToken(response, clientSettings);
+        this.removeRefreshToken(response, clientSettings);
+        this.removeIdentityToken(response, clientSettings);
     }
 
     removeRefreshToken(response, clientSettings) {

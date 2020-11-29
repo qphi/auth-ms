@@ -73,7 +73,7 @@ class DynamoJWTPersistence extends DynamoProvider {
             key: refreshToken,
             kind: TOKEN_TYPE.REFRESH,
             payload: '',
-            expire: Date.now() + day_in_ms
+            expire: parseInt(Date.now() + day_in_ms, 10)
         });
     }
 

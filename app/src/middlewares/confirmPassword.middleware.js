@@ -1,4 +1,4 @@
-const sha256 = require('sha256');
+const STATUS_CODE = require('../../config/status-code.config');
 
 module.exports = (request, response, next) => {
     const { password, confirmPassword } = request.body;
@@ -14,8 +14,9 @@ module.exports = (request, response, next) => {
     else {
         if (password !== confirmPassword) {
             response.json({
-                message: 'password mismatch',
-                status: 'aborted'
+                message:  STATUS_CODE.PASSWORD_MISMATCH,
+                status: STATUS_CODE.PROCESS_ABORTED,
+                error: STATUS_CODE.NO_ERROR
             });
         }
 

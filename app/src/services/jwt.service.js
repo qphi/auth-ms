@@ -1,6 +1,7 @@
 
 const InvalidTokenException = require('../Exceptions/InvalidToken.exception');
 const { param } = require('../dev.application-state');
+const MissingRefreshTokenException = require('../Exceptions/MissingRefreshToken.exception');
 
 class JWTService {
     constructor(settings = {}) {
@@ -32,10 +33,20 @@ class JWTService {
     }
 
     async deleteRefreshToken(request) {
-        const refreshToken = this.api.requestAdapter.getRefreshToken(request);
-      
-        if (refreshToken !== null) {
-            await this.spi.jwtPeristence.deleteToken(access);    
+        try {
+            const refreshToken = this.api.requestAdapter.getRefreshToken(request);
+            await this.spi.jwtPeristence.deleteToken(refreshToken);    
+        }
+
+        catch(error) {
+            if (error instanceof MissingRefreshTokenException) {
+                // it's ok
+            }
+
+            else {
+                console.error(error);
+            }
+           
         }
     }
 
@@ -47,7 +58,7 @@ class JWTService {
         await this.deleteRefreshToken(request);
 
         const clientSettings = this.getClientSettings(request);
-        this.api.responseHelper.removeTokens(response, clientSettings);
+        this.api.responseAdapter.removeTokens(response, clientSettings);
     }
 
     /**
@@ -55,7 +66,7 @@ class JWTService {
      * @param {Mixed} clientSettings 
      */
     forgeIdentityToken(payload, clientSettings) {
-        this.domain.jwt.sign(
+        return this.domain.jwt.sign(
             payload, 
             clientSettings.JWT_SECRET_ACCESSTOKEN,
             clientSettings.JWT_ACCESS_TTL
@@ -68,7 +79,7 @@ class JWTService {
      */
     forgeRefreshToken(payload, clientSettings) {
         const forgotPasswordTTL = param.forgotPasswordTokenTTL;
-        this.domain.jwt.sign(
+        return this.domain.jwt.sign(
             payload, 
             clientSettings.JWT_SECRET_REFRESHTOKEN,
             forgotPasswordTTL
@@ -80,7 +91,7 @@ class JWTService {
      * @param {Mixed} clientSettings 
      */
     forgeForgotPasswordToken(payload, clientSettings) {
-        this.domain.jwt.sign(
+        return this.domain.jwt.sign(
             payload, 
             clientSettings.JWT_SECRET_FORGOTPASSWORDTOKEN
         );

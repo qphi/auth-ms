@@ -6,10 +6,13 @@ const UserAlreadyExistsException = require('../../Exceptions/UserAlreadyExists.e
  */
 class DynamoUserPersistence extends DynamoProvider {
     constructor(context) {
+        const schema =  require('../../Domain/User/user.schema');
+        schema.email.hashKey = true;
+        schema.application_uuid.rangeKey = true;
         super(
             ResourceModelFactory.fromSchema(
                 context.entity.user,
-                require('../../Domain/User/user.schema'),
+               schema,
                 'dynamo'
             ),
 
@@ -21,11 +24,22 @@ class DynamoUserPersistence extends DynamoProvider {
 
 
     async findByCredentials(email, password, clientSettings = {}) {
-        return await this.model.get({ 
+        const result =  await this.model.get({ 
             email,
-            password,
             application_uuid: clientSettings.MS_UUID
         });
+
+
+        if (
+            typeof result !== 'undefined' &&
+            result.password === password
+        ) {
+            return result;
+        }
+
+        else {
+            return null;
+        }
     }
 
     async getUserUUID(email, service) {

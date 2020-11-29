@@ -11,6 +11,10 @@ class UserRequestHelper {
     getPassword(request) {
         return request.user.password;
     }
+
+    getConfirmPassword(request) {
+        return request.user.confirmPassword;
+    }
 }
 
 module.exports = /** @type {UserRequestHelper} */ Singleton.create(UserRequestHelper);
