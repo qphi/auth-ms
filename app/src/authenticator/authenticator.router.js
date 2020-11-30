@@ -5,6 +5,8 @@ const RetrieveUserMiddleware = require('../middlewares/retrieveUser.middleware')
 const ConfirmPasswordConstraint = require('../middlewares/confirmPassword.middleware');
 const EmailIsValid = require('../middlewares/emailIsValid.constraint.middleware');
 const PasswordIsNotTooWeakConstraint = require('../middlewares/passwordIsNotTooWeak.constraint.middleware');
+const emailIsValidConstraintMiddleware = require('../middlewares/emailIsValid.constraint.middleware');
+const aPasswordIsGivenConstraint = require('../middlewares/aPasswordIsGiven.constraint');
 
 module.exports = ctx => {
     return [
@@ -12,9 +14,10 @@ module.exports = ctx => {
             method: 'post',
             path: '/api/login',
             middlewares: [
+                emailIsValidConstraintMiddleware,
+                aPasswordIsGivenConstraint,
                 RetrieveServiceMiddleware,
                 RetrieveUserMiddleware
-
             ],
             
             action: ctx.controllers.core.getMethod('onLogin')
@@ -40,9 +43,10 @@ module.exports = ctx => {
             method: 'post',
             path: '/api/register',
             middlewares: [ 
-                ConfirmPasswordConstraint,
                 EmailIsValid,
+                aPasswordIsGivenConstraint,
                 PasswordIsNotTooWeakConstraint,
+                ConfirmPasswordConstraint,
                 RetrieveServiceMiddleware,
                 RetrieveUserMiddleware
             ],
@@ -112,11 +116,10 @@ module.exports = ctx => {
             action: ctx.controllers.bo.getMethod('renderShowService')
         },
 
-
         {
             method:'get',
             path: '/records',
             action: ctx.controllers.bo.getMethod('renderListServices')
-        },
+        }
     ]
 }

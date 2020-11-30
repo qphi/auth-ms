@@ -4,12 +4,13 @@ module.exports = (request, response, next) => {
     const { password, confirmPassword } = request.body;
 
     
-    if (
-        typeof password !== 'string' ||
-        typeof confirmPassword !== 'string'
-    ) {
-        response.sendStatus(401);
-    }
+    if (typeof confirmPassword !== 'string') {
+        response.status(401).send({
+            message:  STATUS_CODE.MISSING_CONFIRM_PASSWORD,
+            status: STATUS_CODE.PROCESS_ABORTED,
+            error: STATUS_CODE.NO_ERROR
+        });
+    } 
 
     else {
         if (password !== confirmPassword) {
