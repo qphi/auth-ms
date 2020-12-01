@@ -1,6 +1,4 @@
-
-
-const RetrieveServiceMiddleware = require('../middlewares/retrieveService.middleware');
+const RetrieveServiceMiddlewareFactory = require('../middlewares/retrieveService.middleware');
 const RetrieveUserMiddleware = require('../middlewares/retrieveUser.middleware');
 const ConfirmPasswordConstraint = require('../middlewares/confirmPassword.middleware');
 const EmailIsValid = require('../middlewares/emailIsValid.constraint.middleware');
@@ -8,7 +6,13 @@ const PasswordIsNotTooWeakConstraint = require('../middlewares/passwordIsNotTooW
 const emailIsValidConstraintMiddleware = require('../middlewares/emailIsValid.constraint.middleware');
 const aPasswordIsGivenConstraint = require('../middlewares/aPasswordIsGiven.constraint');
 
+/**
+ * 
+ * @param {Object} ctx 
+ * @return {Array<{method: string, path: string, middlewares: Function[], action: Function}>}
+ */
 module.exports = ctx => {
+    const RetrieveServiceMiddleware = RetrieveServiceMiddlewareFactory(ctx);
     return [
         {
             method: 'post',

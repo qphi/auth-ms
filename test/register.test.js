@@ -19,14 +19,14 @@ chai.use(chaiHttp);
 //Our parent block
 describe('[Dynamo] Register', () => {
     before(done => {
-       purgeDB().then(done);     
+        purgeDB().then(done);     
     });
-/*
-  * Test the /GET route
-  */
-  describe('/api/register', () => {
-      it('should detect missing email', (done) => {
-        chai.request(server)
+    /*
+    * Test the /GET route
+    */
+    describe('/api/register', () => {
+        it('should detect missing email', (done) => {
+            chai.request(server)
             .post('/api/register')
             .send(users.missingEmail)
             .end((err, res) => {
@@ -34,13 +34,13 @@ describe('[Dynamo] Register', () => {
                 assert.strictEqual(res.statusCode, 401);
                 assert.strictEqual(res.body.status, STATUS_CODE.PROCESS_ABORTED);
                 assert.strictEqual(res.body.message, STATUS_CODE.MISSING_EMAIL);
-              
+                
                 done();
             });
-      });
-
-      it('should detect invalid email', (done) => {
-        chai.request(server)
+        });
+        
+        it('should detect invalid email', (done) => {
+            chai.request(server)
             .post('/api/register')
             .send(users.invalidEmail)
             .end((err, res) => {
@@ -49,13 +49,13 @@ describe('[Dynamo] Register', () => {
                 assert.strictEqual(res.body.status, STATUS_CODE.PROCESS_ABORTED);
                 assert.strictEqual(res.body.message, STATUS_CODE.INVALID_EMAIL);
                 assert.strictEqual(res.body.error, STATUS_CODE.NO_ERROR);
-              
+                
                 done();
             });
-      });
-
-      it('should detect missing password', (done) => {
-        chai.request(server)
+        });
+        
+        it('should detect missing password', (done) => {
+            chai.request(server)
             .post('/api/register')
             .send(users.missingPassword)
             .end((err, res) => {
@@ -63,13 +63,13 @@ describe('[Dynamo] Register', () => {
                 assert.strictEqual(res.statusCode, 401);
                 assert.strictEqual(res.body.status, STATUS_CODE.PROCESS_ABORTED);
                 assert.strictEqual(res.body.message, STATUS_CODE.MISSING_PASSWORD);
-              
+                
                 done();
             });
-      });
-
-      it('should detect missing confirm password', (done) => {
-        chai.request(server)
+        });
+        
+        it('should detect missing confirm password', (done) => {
+            chai.request(server)
             .post('/api/register')
             .send(users.missingConfirm)
             .end((err, res) => {
@@ -77,37 +77,37 @@ describe('[Dynamo] Register', () => {
                 assert.strictEqual(res.statusCode, 401);
                 assert.strictEqual(res.body.status, STATUS_CODE.PROCESS_ABORTED);
                 assert.strictEqual(res.body.message, STATUS_CODE.MISSING_CONFIRM_PASSWORD);
-              
+                
                 done();
             });
-      });
-
-      it('should detect missing app', (done) => {
-        chai.request(server)
+        });
+        
+        it('should detect missing app', (done) => {
+            chai.request(server)
             .post('/api/register')
             .send(users.missingApp)
             .end((err, res) => {
                 assert.isNull(err);
                 assert.strictEqual(res.statusCode, 401);
-              
+                
                 done();
             });
-      });
-
-      it('should detect password mismatch', (done) => {
-        chai.request(server)
+        });
+        
+        it('should detect password mismatch', (done) => {
+            chai.request(server)
             .post('/api/register')
             .send(users.missingApp)
             .end((err, res) => {
                 assert.isNull(err);
                 assert.strictEqual(res.statusCode, 401);
-              
+                
                 done();
             });
-      });
-
-      it('should detect password too weak (based on length)', (done) => {
-        chai.request(server)
+        });
+        
+        it('should detect password too weak (based on length)', (done) => {
+            chai.request(server)
             .post('/api/register')
             .send(users.passwordTooWeak)
             .end((err, res) => {
@@ -115,49 +115,49 @@ describe('[Dynamo] Register', () => {
                 assert.strictEqual(res.statusCode, 200);
                 assert.strictEqual(res.body.status, STATUS_CODE.PROCESS_ABORTED);
                 assert.strictEqual(res.body.message, STATUS_CODE.PASSWORD_TOO_WEAK);
-              
+                
                 done();
             });
-      });
-
-      it('should detect invalid customer-app', (done) => {
-        chai.request(server)
+        });
+        
+        it('should detect invalid customer-app', (done) => {
+            chai.request(server)
             .post('/api/register')
             .send(users.unknownApp)
             .end((err, res) => {
                 assert.isNull(err);
                 assert.strictEqual(res.statusCode, 401);
-               
-              
+                
+                
                 done();
             });
-      });
-
-      it('should register valid user', (done) => {
-        chai.request(server)
+        });
+        
+        it('should register valid user', (done) => {
+            chai.request(server)
             .post('/api/register')
             .send(users.validUser)
             .end((err, res) => {
                 assert.isNull(err);
                 assert.strictEqual(res.statusCode, 200);
-               
-              
+                
+                
                 done();
             });
-      });
-
-      it('should prevent duplicated user', (done) => {
-        chai.request(server)
+        });
+        
+        it('should prevent duplicated user', (done) => {
+            chai.request(server)
             .post('/api/register')
             .send(users.existingUser)
             .end((err, res) => {
                 assert.isNull(err);
                 assert.strictEqual(res.statusCode, 200);
                 assert.strictEqual(res.body.status, STATUS_CODE.PROCESS_ABORTED);
-               
-              
+                
+                
                 done();
             });
-      });
-  });
+        });
+    });
 });

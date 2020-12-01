@@ -5,6 +5,7 @@ module.exports = {
     MISSING_EMAIL: 'missing email',
     MISSING_PASSWORD: 'missing password',
     MISSING_CONFIRM_PASSWORD: 'missing password',
+    MISSING_API_KEY: 'missing api key',
     
     NO_ERROR: false,
     WITH_ERROR: true,

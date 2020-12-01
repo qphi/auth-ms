@@ -1,30 +1,32 @@
 const now = Date.now();
 const validEmail =  `toto${now}@tata.com`;
 
+const applications = require('./application.fixture');
+
 module.exports = {
     missingEmail: {
         "password": "azertyuiop123",
         "confirmPassword": "azertyuiop123",
-        "app": "books"
+        "API_KEY": applications[0].API_KEY
     },
 
     invalidEmail: {
         "email": "toto",
         "password": "azertyuiop123",
         "confirmPassword": "azertyuiop123",
-        "app": "books"
+        "API_KEY": applications[0].API_KEY
     },
 
     missingPassword: {
         "email": validEmail,
         "confirmPassword": "azertyuiop123",
-        "app": "books"
+        "API_KEY": applications[0].API_KEY
     },
 
     missingConfirm: {
         "email": validEmail,
         "password": "azertyuiop123",
-        "app": "books"
+        "API_KEY": applications[0].API_KEY
     },
 
     missingApp: {
@@ -37,34 +39,34 @@ module.exports = {
         "email": validEmail,
         "password": "azertyuiop123",
         "confirmPassword": "azertyuiop321",
-        "app": "books"
+        "API_KEY": applications[0].API_KEY
     },
 
     passwordTooWeak: {
         "email": validEmail,
         "password": "admin",
         "confirmPassword": "admin",
-        "app": "books"
+        "API_KEY": applications[0].API_KEY
     },
 
     unknownApp: {
         "email":  validEmail,
         "password": "azertyuiop321",
         "confirmPassword": "azertyuiop321",
-        "app": "gagagagagagag"
+        "API_KEY": "gagagagagagag"
     },
 
     validUser: {
         "email": validEmail,
         "password": "azertyuiop321",
         "confirmPassword": "azertyuiop321",
-        "app": "books"
+        "API_KEY": applications[0].API_KEY
     },
 
     existingUser: {
         "email": validEmail,
         "password": "azertyuiop321",
         "confirmPassword": "azertyuiop321",
-        "app": "books"
+        "API_KEY": applications[0].API_KEY
     }
 }

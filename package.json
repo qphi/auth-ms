@@ -5,6 +5,7 @@
   "description": "auth-ms",
   "scripts": {
     "dev": "cross-env NODE_ENV=dev node ./app",
+    "test-env": "cross-env NODE_ENV=test node ./app",
     "test": "mocha --timeout 50000"
   },
   "devDependencies": {

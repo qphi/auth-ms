@@ -23,6 +23,8 @@ class AuthenticatorMicroService extends MicroService {
         // const container = require('../DependancyInjection');
         const container = this.loadContainer(settings.config);
 
+        console.log(container);
+
         this.state = {
             db: null
         };
@@ -57,6 +59,7 @@ class AuthenticatorMicroService extends MicroService {
         // })
 
         const router = recordedRoutes({
+            ...container,
             controllers: {
                 core: new CoreController({
                     ...container,
@@ -71,6 +74,7 @@ class AuthenticatorMicroService extends MicroService {
 
       
         this.setupBackOffice(settings);
+
 
         RoutingService.use(this.app, router);
     }

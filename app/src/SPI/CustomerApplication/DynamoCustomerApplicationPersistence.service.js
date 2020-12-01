@@ -8,7 +8,7 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
         super(
             ResourceModelFactory.fromSchema(
                 context.entity.ms_recorded,
-                require('../../Domain/User/user.schema'),
+                require('../../Domain/CustomerApplication/customerApplication.schema'),
                 'dynamo'
             ),
            
@@ -16,6 +16,16 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
                 id: 'MS_UUID'
             }
         );
+    }
+
+     /**
+     * @param {String} secret 
+     */
+    async findByAPIKey(api_key) {
+        const app = await this.model.query({ api_key });
+
+        console.log(app);
+        return app || null;
     }
 }
 

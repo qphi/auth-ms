@@ -317,11 +317,13 @@ class CoreController extends BaseController {
             JWT_SECRET_REFRESHTOKEN: sha256(`jwt-${name}-refresh-token-${SALT}`), 
             JWT_SECRET_FORGOTPASSWORDTOKEN: sha256(`jwt-${name}-forgotpassword-token-${SALT}`), 
             MS_UUID: uuid.v5(name, process.env.MS_UUID),
+            API_KEY:  uuid.v5(name + SALT, process.env.MS_UUID),
             COOKIE_JWT_ACCESS_NAME: sha256(`jwt-${name}-access-cookie-${SALT}`), 
             COOKIE_JWT_REFRESH_NAME: sha256(`jwt-${name}-refresh-cookie-${SALT}`),
             SALT
         }
         
+        console.log('settings', settings);
         await this.spi.customerApplicationPersistence.create(settings);
 
         return response.sendStatus(200);
