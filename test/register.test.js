@@ -127,6 +127,9 @@ describe('[Dynamo] Register', () => {
             .end((err, res) => {
                 assert.isNull(err);
                 assert.strictEqual(res.statusCode, 401);
+                assert.strictEqual(res.body.status, STATUS_CODE.PROCESS_ABORTED);
+                assert.strictEqual(res.body.error, STATUS_CODE.NO_ERROR);
+                assert.strictEqual(res.body.message, STATUS_CODE.UNKNOWN_APPLICATION);
                 
                 
                 done();

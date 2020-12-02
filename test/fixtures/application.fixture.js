@@ -1,6 +1,6 @@
 module.exports = [
     {
-        NAME: 'books',
+        name: 'books',
         JWT_ACCESS_TTL: 180000,
         JWT_SECRET_ACCESSTOKEN: 'bd715a978b0d2caa370a925755f83a20bc68572279e7f93d9bec79c8904ef12f',
         JWT_SECRET_REFRESHTOKEN: "b4153dedfdbd22b188689f3bac33461679269b1770f522c269563fd6d5c17da2",
@@ -12,7 +12,7 @@ module.exports = [
     },
 
     {
-        NAME: 'test-2',
+        name: 'test-2',
         DB_TYPE: 'mysql',
 
         JWT_ACCESS_TTL: 180000,

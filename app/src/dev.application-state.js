@@ -10,7 +10,8 @@ module.exports = {
     },
 
     param: {
-        forgotPasswordTokenTTL: _6hours
+        forgotPasswordTokenTTL: _6hours,
+        DYNAMO_API_KEY_INDEX_NAME: process.env.DYNAMO_API_KEY_INDEX_NAME
     },
 
     domain
