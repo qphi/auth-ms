@@ -58,7 +58,7 @@ class BackOfficeController extends BaseController {
         }
 
         catch(e) {
-            console.log('aa');
+            console.error(e);
         }
     }
 };

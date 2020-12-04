@@ -5,4 +5,9 @@ configuration.factory.spi.customerApplicationPersistence = context => {
     return new type(context);
 };
 
+configuration.factory.spi.userPersistence = context => {
+    const type = require('../../src/SPI/User/MockUserPersistence.service');
+    return new type(context);
+};
+
 module.exports = configuration;

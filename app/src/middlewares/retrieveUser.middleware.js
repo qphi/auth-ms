@@ -3,7 +3,6 @@ const sha256 = require('sha256');
 module.exports = (request, response, next) => {
     const { email, password } = request.body;
 
-    
     if (
         typeof email === 'undefined' ||
         typeof password === 'undefined'
@@ -22,6 +21,7 @@ module.exports = (request, response, next) => {
 
         request.user.email = sha256(email);
         request.user.password = sha256(password);
+
         next();
     }
 }

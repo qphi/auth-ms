@@ -57,7 +57,6 @@ class DynamoUserPersistence extends DynamoProvider {
      * @param {Mixed} clientSettings 
      */
     async create(userData, clientSettings) {
-        let success = false;
         userData.application_uuid = clientSettings.MS_UUID;
 
         try {

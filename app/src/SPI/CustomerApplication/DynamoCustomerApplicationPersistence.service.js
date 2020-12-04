@@ -1,5 +1,6 @@
 const { DynamoProvider, ResourceModelFactory } = require('rest-api');
 
+const ApplicationNameIsNotAvailableException = require('../../Exceptions/ApplicationNameIsNotAvailable.exception');
 /**
  * @implements {CustomerApplicationPersistenceInterface}
  */
@@ -29,6 +30,26 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
         this.index =  {
             API_KEY: context.param.DYNAMO_API_KEY_INDEX_NAME
         }
+    }
+
+    async create(settings) {
+        let response = null;
+        
+        try {
+            response = await super.create(settings);
+        }
+        
+        catch(error) {
+            if (error.code === 'ConditionalCheckFailedException') {
+                const exists = await this.model.get(settings.MS_UUID);
+                if (typeof exists !== 'undefined') {
+                    console.log('je lance lecpet');
+                    throw new ApplicationNameIsNotAvailableException(settings.name);
+                }
+            }           
+        }
+
+        return response;
     }
 
      /**

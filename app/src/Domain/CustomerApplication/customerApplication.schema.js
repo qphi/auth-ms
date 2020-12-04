@@ -4,7 +4,8 @@ module.exports = ResourceSchema({
     namespace: 'customer-application',
     primaryKey: 'MS_UUID',
     schema: {
-        DB_TYPE: {type: String, required: true},
+        // DB_TYPE: {type: String, required: true},
+        name: {type: String, required: true },
         JWT_ACCESS_TTL: { type: Number, required: true},
         JWT_SECRET_ACCESSTOKEN: { type: String, required: true },
         JWT_SECRET_REFRESHTOKEN: { type: String, required: true },

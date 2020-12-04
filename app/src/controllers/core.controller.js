@@ -12,6 +12,7 @@ const JWTPersistenceInterface = require('../SPI/JWT/JWTPersistence.interface');
 const STATUS_CODE = require('../../config/status-code.config');
 
 const { param } = require('../dev.application-state');
+const ApplicationNameIsNotAvailableException = require('../Exceptions/ApplicationNameIsNotAvailable.exception');
 
 class CoreController extends BaseController {
     constructor(settings = { services : {} }) {
@@ -98,12 +99,13 @@ class CoreController extends BaseController {
         // Read username and password from request body
         const email = this.api.userRequestAdapter.getEmail(request);
         const password = this.api.userRequestAdapter.getPassword(request);
+
        const user = await this.spi.userPersistence.findByCredentials(
             email, 
             password, 
             clientSettings
         );
-    
+ 
         // Filter user from the users array by username and password
         //const user = mock.users.find(u => { return u.username === username && u.password === password });
     
@@ -153,6 +155,7 @@ class CoreController extends BaseController {
         }
 
         const responseMessage = {}
+        let status = 201;
 
         try {
             const clientSettings =  this.services.jwt.getClientSettings(request);
@@ -175,10 +178,12 @@ class CoreController extends BaseController {
 
         catch (error) {
             if (error.name === 'UserAlreadyExistsException') {
+                status = 200;
                 responseMessage.message = 'An account using this email was found';
             }
 
             else {
+                status = 500;
                 responseMessage.message = error.message;
             }
 
@@ -186,7 +191,7 @@ class CoreController extends BaseController {
         }
 
         finally {
-            response.json(responseMessage);
+            response.status(status).json(responseMessage);
         }
     }
 
@@ -302,13 +307,12 @@ class CoreController extends BaseController {
         }
     }
 
-    async onCreateService(request, response) {
+    async recordApplication(request, response) {
         const name = request.body.name;
 
        
         const SALT = crypto.randomBytes(16);
         const settings = {
-            DB_TYPE: 'mysql',
             name: name,
             icon_src: '',
 
@@ -320,13 +324,48 @@ class CoreController extends BaseController {
             API_KEY:  uuid.v5(name + SALT, process.env.MS_UUID),
             COOKIE_JWT_ACCESS_NAME: sha256(`jwt-${name}-access-cookie-${SALT}`), 
             COOKIE_JWT_REFRESH_NAME: sha256(`jwt-${name}-refresh-cookie-${SALT}`),
-            SALT
+            SALT: `${SALT}`
         }
-        
-        console.log('settings', settings);
-        await this.spi.customerApplicationPersistence.create(settings);
 
-        return response.sendStatus(200);
+        let status = null;
+        let data = {
+            error: STATUS_CODE.NO_ERROR,
+            status: STATUS_CODE.PROCESS_DONE
+        };
+
+        try {
+            const record = await this.spi.customerApplicationPersistence.create(settings);
+            if (record !== null) {
+                status = 201;
+                delete record.SALT;
+                data.message = record;
+            }
+
+            else {
+                status = 200;
+                data.message = 'wtf ?';
+            }
+        }
+
+        catch (error) {
+            if (error instanceof ApplicationNameIsNotAvailableException) {
+                status = 200;
+                data.message = 'ApplicationNameIsNotAvailableException';
+                data.status = STATUS_CODE.PROCESS_ABORTED;
+            }
+
+            else {
+                status = 500;
+                data.message = 'unknown error';
+                console.error(error);
+            }
+        }
+
+        finally {
+            return response.status(status).json(data);
+        }
+       
+    
     }
 };
 

@@ -91,6 +91,12 @@ class AuthenticatorMicroService extends MicroService {
     }
 
     initializeDBConnexion(db_type) {
+        console.log(db_type);
+    
+        if (typeof db_type === 'undefined' && process.env.NODE_ENV !== 'prod') {
+            return;
+        }
+
         const credentials = {};
 
     

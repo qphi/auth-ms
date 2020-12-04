@@ -16,8 +16,7 @@ module.exports = (context) => {
                 }
 
                 const service = await context.spi.customerApplicationPersistence.findByAPIKey(API_KEY);
-                // const service = services[app] || null;
-    
+
                 if (service === null) {
                     return response.status(401).send({
                         message: STATUS_CODE.UNKNOWN_APPLICATION,

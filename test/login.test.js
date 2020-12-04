@@ -1,5 +1,5 @@
 //During the test the env variable is set to test
-process.env.NODE_ENV = 'test';
+// process.env.NODE_ENV = 'test';
 
 
 //Require the dev-dependencies
@@ -21,28 +21,33 @@ chai.use(chaiHttp);
 //Our parent block
 describe('[Dynamo] Login', () => {
     before(done => {
-        purgeDB().then(() => {
-            const port = process.env.PORT;
-       
-            console.log({
-                confirmPassword: fixtures.users.existingUser.password,
-                ...fixtures.users.existingUser
-            })
-            //done();
-            axios.post('http://localhost:' + port + '/api/register', {
-                confirmPassword: fixtures.users.existingUser.password,
-                ...fixtures.users.existingUser
-            }).then(
-                (data) => {
-                    done();
-                }
-            ).catch(err => {
-                console.error(err);
-                done();
-            });
+        if (process.env.NODE_ENV === 'mock') {
+            return done();
+        }
 
-        });  
-        
+        else {
+            purgeDB().then(() => {
+                const port = process.env.PORT;
+           
+                console.log({
+                    confirmPassword: fixtures.users.existingUser.password,
+                    ...fixtures.users.existingUser
+                })
+                //done();
+                axios.post('http://localhost:' + port + '/api/register', {
+                    confirmPassword: fixtures.users.existingUser.password,
+                    ...fixtures.users.existingUser
+                }).then(
+                    (data) => {
+                        done();
+                    }
+                ).catch(err => {
+                    console.error(err);
+                    done();
+                });
+    
+            });
+        }
     });
 
     describe(`POST ${loginURL}`, () => {
@@ -99,8 +104,6 @@ describe('[Dynamo] Login', () => {
                 .post(loginURL)
                 .send(fixtures.users.existingUserOnAnotherApp)
                 .end((err, res) => {
-
-                    console.log(fixtures.users.existingUserOnAnotherApp)
                     assert.isNull(err);
                     assert.strictEqual(res.statusCode, 401);
                     assert.strictEqual(res.body.message, STATUS_CODE.BAD_CREDENTIALS);

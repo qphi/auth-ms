@@ -82,10 +82,10 @@ module.exports = ctx => {
 
         {
             method:'post',
-            path: '/api/create-service',
+            path: '/api/application',
             middlewares: [],
 
-            action: ctx.controllers.core.getMethod('onCreateService')
+            action: ctx.controllers.core.getMethod('recordApplication')
         },
 
 

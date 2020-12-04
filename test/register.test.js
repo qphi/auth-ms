@@ -142,7 +142,7 @@ describe('[Dynamo] Register', () => {
             .send(users.validUser)
             .end((err, res) => {
                 assert.isNull(err);
-                assert.strictEqual(res.statusCode, 200);
+                assert.strictEqual(res.statusCode, 201);
                 
                 
                 done();
