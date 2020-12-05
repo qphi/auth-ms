@@ -13,6 +13,7 @@ const express = require('express');
 
 const CoreController = require('../controllers/core.controller');
 const BackOfficeController = require('../controllers/back-office.controller');
+const ApplicationController = require('../controllers/application.controller');
 
 class AuthenticatorMicroService extends MicroService {
     constructor(settings = {}) {
@@ -58,17 +59,17 @@ class AuthenticatorMicroService extends MicroService {
         //     }
         // })
 
+        const context = {
+            ...container,
+            services: this.services
+        };
+
         const router = recordedRoutes({
             ...container,
             controllers: {
-                core: new CoreController({
-                    ...container,
-                    services: this.services
-                }),
-
-                bo: new BackOfficeController({
-                    services: this.services
-                })
+                core: new CoreController(context),
+                application: new ApplicationController(context),
+                bo: new BackOfficeController(context)
             }
         });
 

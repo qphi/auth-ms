@@ -6,6 +6,8 @@ const PasswordIsNotTooWeakConstraint = require('../middlewares/passwordIsNotTooW
 const emailIsValidConstraintMiddleware = require('../middlewares/emailIsValid.constraint.middleware');
 const aPasswordIsGivenConstraint = require('../middlewares/aPasswordIsGiven.constraint');
 
+const { ResourceRouter } = require('rest-api');
+
 /**
  * 
  * @param {Object} ctx 
@@ -13,7 +15,28 @@ const aPasswordIsGivenConstraint = require('../middlewares/aPasswordIsGiven.cons
  */
 module.exports = ctx => {
     const RetrieveServiceMiddleware = RetrieveServiceMiddlewareFactory(ctx);
-    return [
+
+    console.log(ctx.controllers)
+    const applicationRouter = ResourceRouter('application', ctx);
+    applicationRouter.forEach(route => route.path = `/api${route.path}`);
+
+    return applicationRouter.concat([
+        {
+            method: 'put',
+            path: '/api/application/:_id/enable',
+            middlewares: [],
+            
+            action: ctx.controllers.application.getMethod('enableById')
+        },
+
+        {
+            method: 'put',
+            path: '/api/application/:_id/disable',
+            middlewares: [],
+            
+            action: ctx.controllers.application.getMethod('disableById')
+        },
+
         {
             method: 'post',
             path: '/api/login',
@@ -80,14 +103,6 @@ module.exports = ctx => {
             action: ctx.controllers.core.getMethod('onResetPassword')
         },
 
-        {
-            method:'post',
-            path: '/api/application',
-            middlewares: [],
-
-            action: ctx.controllers.core.getMethod('recordApplication')
-        },
-
 
         /**
          * FRONT
@@ -125,5 +140,5 @@ module.exports = ctx => {
             path: '/records',
             action: ctx.controllers.bo.getMethod('renderListServices')
         }
-    ]
+    ])
 }

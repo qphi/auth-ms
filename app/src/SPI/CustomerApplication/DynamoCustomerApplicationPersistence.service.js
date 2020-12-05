@@ -67,6 +67,25 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
         }
       
     }
+
+    async findById(_id) {
+        const result = await this.model.get(_id);
+        return result;
+    }
+
+    async deleteById(_id) {
+        // || true in order to inducate that deletion was successful even if no elt was deleted (dynamoose cant return nb item deleted for now)
+        return await this.model.delete( _id) || true;
+    }
+
+    async updateById(_id, updates) {
+        // update name is forbidden !
+        if (typeof updates.name !== 'undefined') {
+            delete updates.name;    
+        }
+
+        return await super.updateById(_id, updates);
+    }
 }
 
 module.exports = DynamoCustomerApplicationPersistence;

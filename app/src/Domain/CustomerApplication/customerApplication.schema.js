@@ -14,7 +14,8 @@ module.exports = ResourceSchema({
         API_KEY: { type: String, required: true },
         COOKIE_JWT_ACCESS_NAME: { type: String, required: true },
         COOKIE_JWT_REFRESH_NAME: { type: String, required: true },
-        SALT: { type: String, required: true }
+        SALT: { type: String, required: true },
+        enabled: { type: Boolean, required: true, default: true },
     }
 });
     

@@ -306,67 +306,6 @@ class CoreController extends BaseController {
             return process.env.FORGOT_PASSWORD_URL;
         }
     }
-
-    async recordApplication(request, response) {
-        const name = request.body.name;
-
-       
-        const SALT = crypto.randomBytes(16);
-        const settings = {
-            name: name,
-            icon_src: '',
-
-            JWT_ACCESS_TTL: 180000,
-            JWT_SECRET_ACCESSTOKEN: sha256(`jwt-${name}-access-token-${SALT}`), 
-            JWT_SECRET_REFRESHTOKEN: sha256(`jwt-${name}-refresh-token-${SALT}`), 
-            JWT_SECRET_FORGOTPASSWORDTOKEN: sha256(`jwt-${name}-forgotpassword-token-${SALT}`), 
-            MS_UUID: uuid.v5(name, process.env.MS_UUID),
-            API_KEY:  uuid.v5(name + SALT, process.env.MS_UUID),
-            COOKIE_JWT_ACCESS_NAME: sha256(`jwt-${name}-access-cookie-${SALT}`), 
-            COOKIE_JWT_REFRESH_NAME: sha256(`jwt-${name}-refresh-cookie-${SALT}`),
-            SALT: `${SALT}`
-        }
-
-        let status = null;
-        let data = {
-            error: STATUS_CODE.NO_ERROR,
-            status: STATUS_CODE.PROCESS_DONE
-        };
-
-        try {
-            const record = await this.spi.customerApplicationPersistence.create(settings);
-            if (record !== null) {
-                status = 201;
-                delete record.SALT;
-                data.message = record;
-            }
-
-            else {
-                status = 200;
-                data.message = 'wtf ?';
-            }
-        }
-
-        catch (error) {
-            if (error instanceof ApplicationNameIsNotAvailableException) {
-                status = 200;
-                data.message = 'ApplicationNameIsNotAvailableException';
-                data.status = STATUS_CODE.PROCESS_ABORTED;
-            }
-
-            else {
-                status = 500;
-                data.message = 'unknown error';
-                console.error(error);
-            }
-        }
-
-        finally {
-            return response.status(status).json(data);
-        }
-       
-    
-    }
 };
 
 module.exports = CoreController;
