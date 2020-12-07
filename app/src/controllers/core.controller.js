@@ -28,7 +28,7 @@ class CoreController extends BaseController {
 
         this.spi = {
             /** @type {JWTPersistenceInterface} */
-            jwtPeristence: settings.spi.jwtPeristence,
+            jwtPersistence: settings.spi.jwtPersistence,
             /** @type {UserPersistenceInterface} */
             userPersistence: settings.spi.userPersistence,
             /** @type {CustomerApplicationPersistenceInterface} */
@@ -115,7 +115,7 @@ class CoreController extends BaseController {
             
             const {identityToken, refreshToken} = this.services.jwt.forgeToken(userData, clientSettings);
             
-            this.spi.jwtPeristence.storeRefreshToken(refreshToken);
+            this.spi.jwtPersistence.storeRefreshToken(refreshToken);
 
             this.api.responseHelper.addIdentityToken(response, clientSettings, identityToken, false);
             this.api.responseHelper.addRefreshToken(response, clientSettings, refreshToken, false);
@@ -257,7 +257,7 @@ class CoreController extends BaseController {
         // check if token is valid
         try {
             tokenData = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, clientSettings);
-            //await this.spi.jwtPeristence.deleteToken(forgotPasswordToken);    
+            //await this.spi.jwtPersistence.deleteToken(forgotPasswordToken);    
             await this.services.jwt.clear(request, response);
         }
 
@@ -266,7 +266,7 @@ class CoreController extends BaseController {
         }
 
         // check integrity by retrieve it from our token storage
-        const storedTokenData = await this.spi.jwtPeristence.getForgotPasswordToken(forgotPasswordToken);
+        const storedTokenData = await this.spi.jwtPersistence.getForgotPasswordToken(forgotPasswordToken);
 
         if (storedTokenData === null) {
             return response.sendStatus(401);

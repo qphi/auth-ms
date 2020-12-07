@@ -14,7 +14,7 @@ class JWTService {
 
         this.spi = {
             /** @type {JWTPersistenceInterface} */
-            jwtPeristence: settings.spi.jwtPeristence
+            jwtPersistence: settings.spi.jwtPersistence
         }
 
         this.domain = {
@@ -25,7 +25,7 @@ class JWTService {
     async getRefreshToken(request) {
         const refreshToken = this.api.requestAdapter.getRefreshToken(request);
         
-        if (await this.spi.jwtPeristence.hasRefreshToken(refreshToken)) {
+        if (await this.spi.jwtPersistence.hasRefreshToken(refreshToken)) {
             throw new InvalidTokenException();
         }
 
@@ -35,7 +35,7 @@ class JWTService {
     async deleteRefreshToken(request) {
         try {
             const refreshToken = this.api.requestAdapter.getRefreshToken(request);
-            await this.spi.jwtPeristence.deleteToken(refreshToken);    
+            await this.spi.jwtPersistence.deleteToken(refreshToken);    
         }
 
         catch(error) {

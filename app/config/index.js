@@ -41,7 +41,7 @@ module.exports = {
                 return new type(context);
             },
 
-            jwtPeristence: context => {
+            jwtPersistence: context => {
                 const type = require('../src/SPI/JWT/DynamoJWTPersistence.service');
                 return new type(context);
             },

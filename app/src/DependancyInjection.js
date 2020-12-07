@@ -5,7 +5,7 @@ const api = {
 };
 
 const spi = {
-    jwtPeristence: require('./SPI/JWT/DynamoJWTPersistence.service'),
+    jwtPersistence: require('./SPI/JWT/DynamoJWTPersistence.service'),
     userPersistence: require('./SPI/User/DynamoUserPersistence.service'),
     customerApplicationPersistence: require('./SPI/CustomerApplication/DynamoCustomerApplicationPersistence.service') 
 };
