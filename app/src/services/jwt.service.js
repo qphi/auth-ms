@@ -2,6 +2,7 @@
 const InvalidTokenException = require('../Exceptions/InvalidToken.exception');
 const { param } = require('../dev.application-state');
 const MissingRefreshTokenException = require('../Exceptions/MissingRefreshToken.exception');
+const crypto = require('crypto');
 
 class JWTService {
     constructor(settings = {}) {
@@ -66,10 +67,12 @@ class JWTService {
      * @param {Mixed} clientSettings 
      */
     forgeIdentityToken(payload, clientSettings) {
+        const safeExpiration = Date.now() +  clientSettings.JWT_ACCESS_TTL;
+        payload.expire = safeExpiration;
         return this.domain.jwt.sign(
             payload, 
             clientSettings.JWT_SECRET_ACCESSTOKEN,
-            clientSettings.JWT_ACCESS_TTL
+            600000 + clientSettings.JWT_ACCESS_TTL
         );
     }
 
@@ -101,10 +104,12 @@ class JWTService {
      * @param {Mixed} payload 
      * @param {Mixed} clientSettings 
      */
-    forgeToken(payload, clientSettings) {
+    forgeToken(payload, clientSettings) {     
+        payload.salt = crypto.randomBytes(10);
+        
         return {
             identityToken: this.forgeIdentityToken(payload, clientSettings),
-            refreshToken: this.forgeIdentityToken(payload, clientSettings)
+            refreshToken: this.forgeRefreshToken(payload, clientSettings)
         };
     }
 
@@ -115,10 +120,11 @@ class JWTService {
         );  
     }
 
-    verify(token, secret) {
+    verify(token, secret, options = {}) {
         return this.domain.jwt.sign(
             token, 
-            secret
+            secret,
+            options
         );   
     }
 }

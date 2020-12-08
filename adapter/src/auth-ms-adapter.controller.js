@@ -1,113 +1,40 @@
 const { BaseController } = require('micro');
-const sha256 = require('sha256');
-const crypto = require('crypto');
-const uuid = require('uuid');
+
 
 const MissingRefreshTokenException = require('../Exceptions/MissingRefreshToken.exception');
 const InvalidTokenException = require('../Exceptions/InvalidToken.exception');
-const JsonWebTokenError = require('jsonwebtoken/lib/JsonWebTokenError');
-const UserPersistenceInterface = require('../SPI/User/UserPersistence.interface');
-const JWTPersistenceInterface = require('../SPI/JWT/JWTPersistence.interface');
 
 const STATUS_CODE = require('../../config/status-code.config');
 
-const { param } = require('../dev.application-state');
-const ApplicationNameIsNotAvailableException = require('../Exceptions/ApplicationNameIsNotAvailable.exception');
-
-class CoreController extends BaseController {
+class AuthenticatorMicroServiceController extends BaseController {
     constructor(settings = { services : {} }) {
         super(settings);
 
+        this.api_key = process.env.AUTH_MS_API_KEY;
         this.api = {
-            requestAdapter: settings.api.requestAdapter || require('../API/request.helper'),
-            /** @type {ResponseHelper} */
-            responseHelper: settings.api.responseAdapter,
-            /** @type {UserRequestHelper} */
-            userRequestAdapter: settings.api.userRequestAdapter
+            authResquestHelper: settings.api.authResquestHelper
+        //     requestAdapter: settings.api.requestAdapter || require('../API/request.helper'),
+        //     /** @type {ResponseHelper} */
+        //     responseHelper: settings.api.responseAdapter,
+        //     /** @type {UserRequestHelper} */
+        //     userRequestAdapter: settings.api.userRequestAdapter
         };
 
-        this.spi = {
-            /** @type {JWTPersistenceInterface} */
-            jwtPersistence: settings.spi.jwtPersistence,
-            /** @type {UserPersistenceInterface} */
-            userPersistence: settings.spi.userPersistence,
-            /** @type {CustomerApplicationPersistenceInterface} */
-            customerApplicationPersistence: settings.spi.customerApplicationPersistence
-        }
+        // this.spi = {
+        //     /** @type {JWTPersistenceInterface} */
+        //     jwtPersistence: settings.spi.jwtPersistence,
+        //     /** @type {UserPersistenceInterface} */
+        //     userPersistence: settings.spi.userPersistence,
+        //     /** @type {CustomerApplicationPersistenceInterface} */
+        //     customerApplicationPersistence: settings.spi.customerApplicationPersistence
+        // }
 
-        this.services.jwt = settings.services.jwt;
-    }
-
-    
-    /**
-     * Forge an identity token. A valid refresh token must be providen
-     * @param {Request} request 
-     * @param {Response} response 
-     */
-    async generateIdentityToken(request, response) {
-        try {
-            const identityToken = this.api.requestAdapter.getIdentityToken(request);
-            const identityTokenSecret = this.api.requestAdapter.getIdentityTokenSecret(request);
-
-            const identityPayload = await this.services.jwt.verify(identityToken, identityTokenSecret)
-            
-            
-            // tod
-            const refreshToken = await this.services.jwt.getRefreshToken(request);
-            const refreshTokenSecret = this.api.requestAdapter.getRefreshTokenSecret(request);
-            const refreshPayload = this.services.jwt.verify(refreshToken, refreshTokenSecret);
-            
-            if (
-                (
-                    typeof identityPayload.user_id === 'string' &&
-                    identityPayload.user_id.length > 10 &&
-                    identityPayload.user_id === refreshPayload.user_id &&
-                    typeof identityPayload.refresh === 'string' &&
-                    identityPayload.refresh.length > 10 &&
-                    identityPayload.refresh === refreshPayload.salt
-                ) !== true 
-            ) {
-                throw new InvalidTokenException('try to refresh with an incorrect identity');
-            }
-            
-            const userData = { 
-                user_id: refreshPayload.user_id,
-                refresh: refreshPayload.salt
-            };
-
-            const clientSettings = this.services.jwt.getClientSettings(request);
-            const identityToken = this.services.jwt.forgeIdentityToken(userData, clientSettings);
-    
-            this.api.responseHelper.addIdentityToken(
-                response, 
-                clientSettings, 
-                identityToken
-            );
-
-            return response.sendStatus(200);
-        }   
-        
-        catch(error) {
-            if (error instanceof MissingRefreshTokenException) {
-                return response.sendStatus(401);
-            }
-
-            else if (
-                error instanceof InvalidTokenException ||
-                error instanceof JsonWebTokenError
-            ) {
-                return response.sendStatus(403);
-            }
-
-            else {
-                return response.sendStatus(500);
-            }
-        }
+        // this.services.jwt = settings.services.jwt;
     }
 
     async onLogout(request, response) {
         try {
-            await this.services.jwt.clear(request, response);
+            await this.api.authResquestHelper.clearCredentials(request, response);
             response.send("Logout successful");
         }
 

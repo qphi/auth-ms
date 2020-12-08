@@ -1,7 +1,7 @@
 const { Singleton } = require('micro');
 const jwt = require('jsonwebtoken');
-
-class JWTService {
+const JWTVerifierService = require('./jwt-verifier.service');
+class JWTService extends JWTVerifierService {
     /**
      * @param {Mixed} data 
      * @param {string} secret 
@@ -11,20 +11,6 @@ class JWTService {
         return jwt.sign(data, secret,         
             ttl ? { expiresIn: ttl + 'ms' } : {}
         );
-    }
-
-    verify(token, secret) {
-        return new Promise((resolve, reject) => {
-            jwt.verify(token, secret, (err, user) => {
-                if (err) {
-                    reject(err);
-                }
-
-                else {
-                    resolve(user);
-                }
-            });
-        });
     }
 }
 

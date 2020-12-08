@@ -55,6 +55,7 @@ class ApplicationController extends BaseController {
             const record = await this.spi.customerApplicationPersistence.create(settings);
             if (record !== null) {
                 status = 201;
+                delete record.MS_UUID;
                 delete record.SALT;
                 data.message = record;
             }

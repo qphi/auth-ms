@@ -139,3 +139,5 @@ POST /register
 
 - delete by id & kind for DynamoJWTPersister (should update rest api, all providers)
 - dynamo: in case of ConditionalCheckFailedException on create, make an additionnal request in order to verify is user already exists
+- bloquer un utilisateur si la demande de refresh est trop élevée, ou si l'on détecte deux identityToken valide simultanément
+- remonter les erreurs dans la gestion du JWT pour l'afficher dans le dashboard

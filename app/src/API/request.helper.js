@@ -1,4 +1,5 @@
 const { Singleton, CookieService } = require('micro'); 
+const MissingIdentityTokenException = require('../Exceptions/MissingIdentityToken.exception');
 const MissingRefreshToken = require('../Exceptions/MissingRefreshToken.exception');
 
 /**
@@ -21,6 +22,18 @@ class RequestHelper {
 
         else {
             return refreshToken;
+        }
+    }
+
+    getIdentityToken(request) {
+        const identityToken = request.body.identityToken;
+
+        if (typeof identityToken !== 'string') {
+            throw new MissingIdentityTokenException();
+        }
+
+        else {
+            return identityToken;
         }
     }
 
