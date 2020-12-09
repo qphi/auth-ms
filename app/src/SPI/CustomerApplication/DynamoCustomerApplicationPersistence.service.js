@@ -11,7 +11,7 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
         const schema =  require('../../Domain/CustomerApplication/customerApplication.schema');
         schema.MS_UUID.hashKey = true;
         schema.API_KEY.index = {
-            name: context.param.DYNAMO_API_KEY_INDEX_NAME,
+            name: context.params.DYNAMO_API_KEY_INDEX_NAME,
             global: true
         };
 
@@ -28,7 +28,7 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
         );
 
         this.index =  {
-            API_KEY: context.param.DYNAMO_API_KEY_INDEX_NAME
+            API_KEY: context.params.DYNAMO_API_KEY_INDEX_NAME
         }
     }
 

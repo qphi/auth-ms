@@ -11,7 +11,7 @@ module.exports = (context) => {
             let identityToken = null;
             try {
                 identityToken = context.api.authRequestHelper.getIdentityToken(request);
-                const payload = context.services.JWTVerifierService(identityToken, context.param.authJwtSecretIdentityToken);
+                const payload = context.services.JWTVerifierService(identityToken, context.params.authJwtSecretIdentityToken);
 
                 if (payload.user_id) {
                     request.user_id = payload.user_id;

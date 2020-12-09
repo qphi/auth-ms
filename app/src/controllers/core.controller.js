@@ -76,12 +76,12 @@ class CoreController extends BaseController {
             };
 
             const clientSettings = this.services.jwt.getClientSettings(request);
-            const identityToken = this.services.jwt.forgeIdentityToken(userData, clientSettings);
+            const newIdentityToken = this.services.jwt.forgeIdentityToken(userData, clientSettings);
     
             this.api.responseHelper.addIdentityToken(
                 response, 
                 clientSettings, 
-                identityToken
+                newIdentityToken
             );
 
             return response.sendStatus(200);
@@ -232,7 +232,7 @@ class CoreController extends BaseController {
         }
 
         const now = Date.now();
-        const forgotPasswordTTL = param.forgotPasswordTokenTTL;
+        const forgotPasswordTTL = params.forgotPasswordTokenTTL;
         const expire = now + forgotPasswordTTL;
 
         const data = {

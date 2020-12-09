@@ -22,7 +22,7 @@ module.exports = {
         customerApplicationSchema: require('../src/Domain/CustomerApplication/customerApplication.schema'),
     },
 
-    param: {
+    params: {
         forgotPasswordTokenTTL: _6hours,
         DYNAMO_API_KEY_INDEX_NAME: process.env.DYNAMO_API_KEY_INDEX_NAME
     },

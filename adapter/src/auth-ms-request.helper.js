@@ -18,11 +18,7 @@ class AuthRequestHelper {
             cookie: cookieService
         }
 
-        this.data = {
-            api_key: context.param.AUTH_MS_API_KEY,
-            cookieJwtRefreshName: context.param.COOKIE_JWT_REFRESH_NAME,
-            jwtResfreshSecret: context.param.JWT_SECRET_REFRESHTOKEN,
-        }
+        this.state = context.state.auth_ms;
     }
 
     getIdentityToken(request) {

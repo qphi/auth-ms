@@ -1,4 +1,3 @@
-const RetrieveServiceMiddlewareFactory = require('../../app/src/middlewares/retrieveService.middleware')
 const RetrieveUserMiddleware = require('../../app/src/middlewares/retrieveUser.middleware');
 const ConfirmPasswordConstraint = require('../../app/src/middlewares/confirmPassword.middleware');
 const EmailIsValid = require('../../app/src/middlewares/emailIsValid.constraint.middleware');
@@ -17,14 +16,13 @@ module.exports = ctx => {
                 RetrieveUserMiddleware
             ],
             
-            action: ctx.controllers.core.getMethod('onLogin')
+            action: ctx.controllers.authenticatorController.getMethod('onLogin')
         },
         
         {
             method: 'post',
             path: '/logout',
-            middlewares: [ RetrieveServiceMiddleware ],
-            action: ctx.controllers.core.getMethod('onLogout')
+            action: ctx.controllers.authenticatorController.getMethod('onLogout')
         }, 
 
         {
@@ -38,29 +36,27 @@ module.exports = ctx => {
                 RetrieveUserMiddleware
             ],
             
-            action: ctx.controllers.core.getMethod('onRegister')
+            action: ctx.controllers.authenticatorController.getMethod('onRegister')
         },
 
         {
             method:'post',
             path: '/api/forgot-password',
             middlewares: [ 
-                RetrieveServiceMiddleware,
                 EmailIsValid
             ],
 
-            action: ctx.controllers.core.getMethod('onForgotPassword')
+            action: ctx.controllers.authenticatorController.getMethod('onForgotPassword')
         },
 
         {
             method:'post',
             path: '/api/reset-password',
             middlewares: [
-                ConfirmPasswordConstraint,
-                RetrieveServiceMiddleware
+                ConfirmPasswordConstraint
             ],
 
-            action: ctx.controllers.core.getMethod('onResetPassword')
+            action: ctx.controllers.authenticatorController.getMethod('onResetPassword')
         },
     ];
 };

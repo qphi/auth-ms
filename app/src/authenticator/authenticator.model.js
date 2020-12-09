@@ -1,10 +1,7 @@
 //@see https://stackabuse.com/authentication-and-authorization-with-jwts-in-express-js/
 // https://medium.com/the-node-js-collection/making-your-node-js-work-everywhere-with-environment-variables-2da8cdf6e786
 const { MicroService, RoutingService, DBHelper } = require('micro');
-const DBService = require('../services/db.service');
-const APIService = require('../services/api.service');
 
-const mock = require('./authenticator.mock');
 const nodemailer = require('nodemailer');
 
 const recordedRoutes = require('./authenticator.router');

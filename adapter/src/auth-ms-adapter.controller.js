@@ -1,56 +1,41 @@
 const { BaseController } = require('micro');
 
-
-const MissingRefreshTokenException = require('../Exceptions/MissingRefreshToken.exception');
-const InvalidTokenException = require('../Exceptions/InvalidToken.exception');
-
-const STATUS_CODE = require('../../config/status-code.config');
+const STATUS_CODE = require('../../app/config/status-code.config');
 
 class AuthenticatorMicroServiceController extends BaseController {
     constructor(settings = { services : {} }) {
         super(settings);
 
-        this.api_key = process.env.AUTH_MS_API_KEY;
+       
         this.api = {
-            authResquestHelper: settings.api.authResquestHelper
-        //     requestAdapter: settings.api.requestAdapter || require('../API/request.helper'),
-        //     /** @type {ResponseHelper} */
-        //     responseHelper: settings.api.responseAdapter,
-        //     /** @type {UserRequestHelper} */
-        //     userRequestAdapter: settings.api.userRequestAdapter
+            authResquestHelper: settings.api.authResquestHelper,
+
+            /** @type {AuthResponseHelper} */
+            authResponseHelper: settings.api.authResponseHelper,
+
+            userRequestAdapter: settings.api.userRequestAdapter
+
+
         };
-
-        // this.spi = {
-        //     /** @type {JWTPersistenceInterface} */
-        //     jwtPersistence: settings.spi.jwtPersistence,
-        //     /** @type {UserPersistenceInterface} */
-        //     userPersistence: settings.spi.userPersistence,
-        //     /** @type {CustomerApplicationPersistenceInterface} */
-        //     customerApplicationPersistence: settings.spi.customerApplicationPersistence
-        // }
-
-        // this.services.jwt = settings.services.jwt;
     }
 
     async onLogout(request, response) {
         try {
-            await this.api.authResquestHelper.clearCredentials(request, response);
-            response.send("Logout successful");
+            await this.api.authResponsetHelper.clearCredentials(request, response);
+            response.redirect('/');
         }
 
         catch(error) {
             response.sendStatus(500);
         }
-       
     }
 
     async onLogin(request, response) {
-        const clientSettings = this.services.jwt.getClientSettings(request);
-        // Read username and password from request body
+        // retrieve username and password from request body
         const email = this.api.userRequestAdapter.getEmail(request);
         const password = this.api.userRequestAdapter.getPassword(request);
 
-       const user = await this.spi.userPersistence.findByCredentials(
+        const user = await this.spi.userPersistence.findByCredentials(
             email, 
             password, 
             clientSettings
@@ -159,7 +144,7 @@ class AuthenticatorMicroServiceController extends BaseController {
         }
 
         const now = Date.now();
-        const forgotPasswordTTL = param.forgotPasswordTokenTTL;
+        const forgotPasswordTTL = params.forgotPasswordTokenTTL;
         const expire = now + forgotPasswordTTL;
 
         const data = {
@@ -258,4 +243,4 @@ class AuthenticatorMicroServiceController extends BaseController {
     }
 };
 
-module.exports = CoreController;
+module.exports = AuthenticatorMicroServiceController;

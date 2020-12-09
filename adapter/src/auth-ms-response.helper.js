@@ -1,26 +1,16 @@
-const { Singleton, CookieService } = require('micro'); 
-const MissingRefreshToken = require('../Exceptions/MissingRefreshToken.exception');
-
-
-const { Singleton, CookieService } = require('micro'); 
+const { CookieService } = require('micro'); 
 
 /**
- * @class AuthRequestHelper
+ * @class AuthResponseHelper
  */
 class AuthResponseHelper {
     constructor(context) {
+        console.log('context', context)
         this.services = {
             cookie: CookieService
         }
 
-        this.data = {
-            api_key: context.param.AUTH_MS_API_KEY,
-            jwtRefreshName: context.param.COOKIE_JWT_REFRESH_NAME,
-            jwtAccessName: context.param.COOKIE_JWT_ACCESS_NAME,
-            jwtRefreshName: context.param.COOKIE_JWT_REFRESH_NAME,
-            jwtAccessTTL: context.param.JWT_ACCESS_TTL,
-            jwtResfreshSecret: context.param.JWT_SECRET_REFRESHTOKEN,
-        }
+        this.state = context.state.auth_ms;
     }
 
     addIdentityToken(response, token, send = true) {
@@ -55,6 +45,10 @@ class AuthResponseHelper {
         }
     }
 
+    clearCredentials(response) {
+        this.removeTokens(response);
+    }
+    
     removeTokens(response) {
         this.removeRefreshToken(response);
         this.removeIdentityToken(response);
@@ -69,5 +63,5 @@ class AuthResponseHelper {
     }
 }
 
-module.exports = /** @type {AuthResponseHelper} */ Singleton.create(AuthResponseHelper);
+module.exports = AuthResponseHelper;
 

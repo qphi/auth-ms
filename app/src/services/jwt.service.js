@@ -81,7 +81,7 @@ class JWTService {
      * @param {Mixed} clientSettings 
      */
     forgeRefreshToken(payload, clientSettings) {
-        const forgotPasswordTTL = param.forgotPasswordTokenTTL;
+        const forgotPasswordTTL = params.forgotPasswordTokenTTL;
         return this.domain.jwt.sign(
             payload, 
             clientSettings.JWT_SECRET_REFRESHTOKEN,
