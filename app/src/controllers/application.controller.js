@@ -90,6 +90,15 @@ class ApplicationController extends BaseController {
         return response.json(results);
     }
     
+    async findByAPIKey(request, response) {
+        const api_key = request.params.api_key;
+
+
+        console.log(api_key, request.params)
+        const result = await this.spi.customerApplicationPersistence.findByAPIKey(api_key);
+        return response.json(result); 
+    }
+
     async findById(request, response) {
         const application_uuid = request.params._id;
         console.log(application_uuid, request.params)

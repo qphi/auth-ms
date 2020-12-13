@@ -5,7 +5,6 @@ const { CookieService } = require('micro');
  */
 class AuthResponseHelper {
     constructor(context) {
-        console.log('context', context)
         this.services = {
             cookie: CookieService
         }
@@ -13,36 +12,28 @@ class AuthResponseHelper {
         this.state = context.state.auth_ms;
     }
 
-    addIdentityToken(response, token, send = true) {
+    addIdentityToken(response, token) {
         this.services.cookie.set(
             response,
-            this.data.jwtAccessName, 
+            this.state.jwtAccessName, 
             token, 
             { 
                 httpOnly: true, 
-                maxAge: this.data.jwtAccessTTL
+                maxAge: this.state.jwtAccessTTL
             }
         );
-
-        if (send === true) {
-            response.sendStatus(200);
-        }
     }
 
-    addRefreshToken(response, token, send = true) {
+    addRefreshToken(response, token) {
         this.services.cookie.set(
             response,
-            this.data.jwtRefreshName, 
+            this.state.jwtRefreshName, 
             token, 
             { 
                 httpOnly: true, 
                 maxAge: 86400000 // 1 day
             }
         );
-
-        if (send === true) {
-            response.sendStatus(200);
-        }
     }
 
     clearCredentials(response) {
@@ -55,11 +46,11 @@ class AuthResponseHelper {
     }
 
     removeRefreshToken(response) {
-        response.clearCookie(this.data.jwtAccessName);
+        response.clearCookie(this.state.jwtAccessName);
     }
 
     removeIdentityToken(response) {
-        response.clearCookie(this.data.jwtRefreshName);
+        response.clearCookie(this.state.jwtRefreshName);
     }
 }
 

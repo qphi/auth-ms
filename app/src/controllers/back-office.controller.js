@@ -7,7 +7,7 @@ class BackOfficeController extends BaseController {
 
 
     renderForgetPassword(request, response) {
-        const service = request.service;
+        const service = request.applicationSettings;
 
 
         response.render('forgot-password', {

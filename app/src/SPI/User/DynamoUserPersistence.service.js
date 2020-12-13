@@ -34,7 +34,13 @@ class DynamoUserPersistence extends DynamoProvider {
             typeof result !== 'undefined' &&
             result.password === password
         ) {
-            return result;
+            const _id = result.user_uuid;
+            delete result.user_uuid;
+
+            return {
+                _id,
+                ...result
+            };
         }
 
         else {

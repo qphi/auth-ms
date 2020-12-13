@@ -15,7 +15,8 @@ class AuthAdapterState {
         
         this.endpoints = {
             login: '/api/login',
-            register: '/api/register'
+            register: '/api/register',
+            retrieveSettings: '/api/application/key/'
         };
     }
 }

@@ -1,6 +1,6 @@
 
 const InvalidTokenException = require('../Exceptions/InvalidToken.exception');
-const { param } = require('../dev.application-state');
+const { params } = require('../dev.application-state');
 const MissingRefreshTokenException = require('../Exceptions/MissingRefreshToken.exception');
 const crypto = require('crypto');
 
@@ -52,7 +52,7 @@ class JWTService {
     }
 
     getClientSettings(request) {
-        return request.service;
+        return request.applicationSettings;
     }
 
     async clear(request, response) {
@@ -69,6 +69,9 @@ class JWTService {
     forgeIdentityToken(payload, clientSettings) {
         const safeExpiration = Date.now() +  clientSettings.JWT_ACCESS_TTL;
         payload.expire = safeExpiration;
+
+        console.log('forge identity', payload);
+
         return this.domain.jwt.sign(
             payload, 
             clientSettings.JWT_SECRET_ACCESSTOKEN,
@@ -81,7 +84,9 @@ class JWTService {
      * @param {Mixed} clientSettings 
      */
     forgeRefreshToken(payload, clientSettings) {
-        const forgotPasswordTTL = params.forgotPasswordTokenTTL;
+        const forgotPasswordTTL = params.refreshTokenTTL;
+         const safeExpiration = Date.now() + forgotPasswordTTL;
+        payload.expire = safeExpiration;
         return this.domain.jwt.sign(
             payload, 
             clientSettings.JWT_SECRET_REFRESHTOKEN,
@@ -105,7 +110,7 @@ class JWTService {
      * @param {Mixed} clientSettings 
      */
     forgeToken(payload, clientSettings) {     
-        payload.salt = crypto.randomBytes(10);
+        payload.salt = crypto.randomBytes(10).toString('hex');
         
         return {
             identityToken: this.forgeIdentityToken(payload, clientSettings),

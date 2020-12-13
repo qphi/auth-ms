@@ -1,4 +1,4 @@
-const JWTVerifierService = require("../app/src/Domain/jwt-verifier.service");
+const JwtVerifierService = require("../app/src/Domain/jwt-verifier.service");
 const AuthRequestHelper = require("./src/auth-ms-request.helper")
 const AuthResponseHelper = require("./src/auth-ms-response.helper")
 const AuthState = require("./src/auth-ms-adapter.state");
@@ -7,25 +7,29 @@ const AuthSPIService = require("./src/auth.service");
 const AuthenticatorMicroServiceController = require('./src/auth-ms-adapter.controller');
 
 module.exports = context => {
+    console.log('====================================');
+    console.log(context);
 
     if (typeof context.state.auth_ms === 'undefined') {
         context.state.auth_ms = new AuthState(context);
     }
+    console.log('====================================');
+    console.log(context);
 
     if (typeof context.api.authRequestHelper === 'undefined') {
         context.api.authRequestHelper = new AuthRequestHelper(context);
     }
 
     if (typeof context.api.authResponseHelper === 'undefined') {
-        context.api.authRequestHelper = new AuthResponseHelper(context);
+        context.api.authResponseHelper = new AuthResponseHelper(context);
     }
     
     if (typeof context.api.userRequestAdapter === 'undefined') {
         context.api.userRequestAdapter = new UserRequestHelper(context);
     }
 
-    if (typeof context.services.JWTVerifierService === 'undefined') {
-        context.services.JWTVerifierService = new JWTVerifierService(context);
+    if (typeof context.services.jwtVerifierService === 'undefined') {
+        context.services.jwtVerifierService = new JwtVerifierService(context);
     }
 
     if (typeof context.services.authService === 'undefined') {
@@ -39,4 +43,6 @@ module.exports = context => {
     if (typeof context.controllers.authenticatorController === 'undefined') {
         context.controllers.authenticatorController = new AuthenticatorMicroServiceController(context);
     }
+
+    context.services.authService.initialize();
 };

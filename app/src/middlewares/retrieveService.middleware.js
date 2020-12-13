@@ -1,4 +1,3 @@
-const services = require('../authenticator/authenticator.mock').servicesRecorded;
 const STATUS_CODE = require('../../config/status-code.config');
 
 module.exports = (context) => {
@@ -15,9 +14,9 @@ module.exports = (context) => {
                     });
                 }
 
-                const service = await context.spi.customerApplicationPersistence.findByAPIKey(API_KEY);
+                const applicationSettings = await context.spi.customerApplicationPersistence.findByAPIKey(API_KEY);
 
-                if (service === null) {
+                if (applicationSettings === null) {
                     return response.status(401).send({
                         message: STATUS_CODE.UNKNOWN_APPLICATION,
                         error: STATUS_CODE.NO_ERROR,
@@ -26,11 +25,11 @@ module.exports = (context) => {
                 }
     
                 else {
-                    if (typeof service.name === 'undefined') {
-                        service.name = service.NAME;
+                    if (typeof applicationSettings.name === 'undefined') {
+                        applicationSettings.name = applicationSettings.NAME;
                     }
                     
-                    request.service = service;
+                    request.applicationSettings = applicationSettings;
                     next();
                 }
             }

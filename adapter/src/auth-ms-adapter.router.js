@@ -12,8 +12,7 @@ module.exports = ctx => {
             path: '/api/login',
             middlewares: [
                 emailIsValidConstraintMiddleware,
-                aPasswordIsGivenConstraint,
-                RetrieveUserMiddleware
+                aPasswordIsGivenConstraint
             ],
             
             action: ctx.controllers.authenticatorController.getMethod('onLogin')
@@ -32,8 +31,7 @@ module.exports = ctx => {
                 EmailIsValid,
                 aPasswordIsGivenConstraint,
                 PasswordIsNotTooWeakConstraint,
-                ConfirmPasswordConstraint,
-                RetrieveUserMiddleware
+                ConfirmPasswordConstraint
             ],
             
             action: ctx.controllers.authenticatorController.getMethod('onRegister')

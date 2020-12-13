@@ -1,21 +1,31 @@
 const { BaseController } = require('micro');
 
 const STATUS_CODE = require('../../app/config/status-code.config');
+const AuthRequestHelper = require('./auth-ms-request.helper');
 
 class AuthenticatorMicroServiceController extends BaseController {
-    constructor(settings = { services : {} }) {
-        super(settings);
+    /**
+     * @param {Object} context 
+     * @param {Object} context.services 
+     * @param {AuthSPIService} context.services.authService
+     */
+    constructor(context = {}) {
+        super(context);
 
        
         this.api = {
-            authResquestHelper: settings.api.authResquestHelper,
+            /** @type {AuthRequestHelper} */
+            authRequestHelper: context.api.authRequestHelper,
 
             /** @type {AuthResponseHelper} */
-            authResponseHelper: settings.api.authResponseHelper,
+            authResponseHelper: context.api.authResponseHelper,
 
-            userRequestAdapter: settings.api.userRequestAdapter
+            userRequestAdapter: context.api.userRequestAdapter
+        };
 
-
+        this.services = {
+            /** @type {AuthSPIService} */
+            authenticator: context.services.authService
         };
     }
 
@@ -31,40 +41,29 @@ class AuthenticatorMicroServiceController extends BaseController {
     }
 
     async onLogin(request, response) {
-        // retrieve username and password from request body
-        const email = this.api.userRequestAdapter.getEmail(request);
-        const password = this.api.userRequestAdapter.getPassword(request);
+        const email = this.api.authRequestHelper.getEmail(request);
+        const password = this.api.authRequestHelper.getPassword(request);
 
-        const user = await this.spi.userPersistence.findByCredentials(
+        const result = await this.services.authenticator.login({
             email, 
-            password, 
-            clientSettings
-        );
+            password,
+        });
  
-        // Filter user from the users array by username and password
-        //const user = mock.users.find(u => { return u.username === username && u.password === password });
-    
-        if (user !== null) {
-            // Generate an access token
-            const userData = { username: user.username,  role: user.role };
-            
-            const {identityToken, refreshToken} = this.services.jwt.forgeToken(userData, clientSettings);
-            
-            this.spi.jwtPersistence.storeRefreshToken(refreshToken);
+        console.log('user found', result);
 
-            this.api.responseHelper.addIdentityToken(response, clientSettings, identityToken, false);
-            this.api.responseHelper.addRefreshToken(response, clientSettings, refreshToken, false);
-
+        if (result.success === true) {
+            this.api.authResponseHelper.addIdentityToken(response, result.identityToken);
+            this.api.authResponseHelper.addRefreshToken(response, result.refreshToken);
             return response.status(200).send({
                 message: STATUS_CODE.LOGIN_SUCCESSFUL,
                 error: STATUS_CODE.NO_ERROR,
                 status: STATUS_CODE.PROCESS_DONE
             });
-        } 
+        }
         
         else {
             // We dont now anything about user context. Clear bad JWT cookies if founds
-            await this.services.jwt.clear(request, response);
+            await this.api.authResponseHelper.clearCredentials(response);
 
             response.status(401).send({
                 message: STATUS_CODE.BAD_CREDENTIALS,
@@ -75,37 +74,24 @@ class AuthenticatorMicroServiceController extends BaseController {
     }
 
     async onRegister(request, response) {
-        const email = this.api.userRequestAdapter.getEmail(request);
-        const password = this.api.userRequestAdapter.getPassword(request);
-        const confirmPassword = this.api.userRequestAdapter.getConfirmPassword(request);
-
-        if (
-            typeof confirmPassword !== 'string'
-        ) {
-            return response.sendStatus(401);
-        }
-
-        if (password !== confirmPassword) {
-            return response.send('Password mismatch');
-        }
+        const email = this.api.authRequestHelper.getEmail(request);
+        const password = this.api.authRequestHelper.getPassword(request);
+        const confirmPassword = this.api.authRequestHelper.getConfirmPassword(request);
 
         const responseMessage = {}
         let status = 201;
 
         try {
-            const clientSettings =  this.services.jwt.getClientSettings(request);
-            const userData = {
-                email: email, 
-                password: password,
-                role: 'member' 
-            };
+           
+            const result = await this.services.authenticator.register({
+                email, 
+                password,
+                confirmPassword
+            });
 
-            responseMessage.user_id = await this.spi.userPersistence.create(
-                userData, 
-                clientSettings
-            );
+            console.log(result);
 
-
+            responseMessage = result.message;
             if (responseMessage.user_id !== null) {
                 responseMessage.status = 'done';
             }

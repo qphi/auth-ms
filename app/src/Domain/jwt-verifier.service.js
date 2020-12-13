@@ -3,8 +3,9 @@ const jwt = require('jsonwebtoken');
 const ExpiredTokenException = require('../Exceptions/ExpiredToken.exception');
 const TokenShouldBeRefreshedException = require('../Exceptions/TokenShouldBeRefreshed.exception');
 
-class JWTVerifierService {
+class JwtVerifierService {
     verify(token, secret) {
+        console.log('verify', token, secret)
         return new Promise(async resolve => {
             let payload = null;
             try {
@@ -12,6 +13,7 @@ class JWTVerifierService {
             }
 
             catch(error) {
+                console.error(error);
                 // send error to auth-ms service ?
                 if (error.name === 'TokenExpired') {
                     throw new ExpiredTokenException();
@@ -30,4 +32,4 @@ class JWTVerifierService {
     }
 }
 
-module.exports = JWTVerifierService;
+module.exports = JwtVerifierService;

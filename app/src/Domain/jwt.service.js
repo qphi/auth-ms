@@ -1,7 +1,7 @@
 const { Singleton } = require('micro');
 const jwt = require('jsonwebtoken');
-const JWTVerifierService = require('./jwt-verifier.service');
-class JWTService extends JWTVerifierService {
+const JwtVerifierService = require('./jwt-verifier.service');
+class JwtService extends JwtVerifierService {
     /**
      * @param {Mixed} data 
      * @param {string} secret 
@@ -14,4 +14,4 @@ class JWTService extends JWTVerifierService {
     }
 }
 
-module.exports = Singleton.create(JWTService);
+module.exports = Singleton.create(JwtService);

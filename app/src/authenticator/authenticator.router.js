@@ -15,8 +15,6 @@ const { ResourceRouter } = require('rest-api');
  */
 module.exports = ctx => {
     const RetrieveServiceMiddleware = RetrieveServiceMiddlewareFactory(ctx);
-
-    console.log(ctx.controllers)
     const applicationRouter = ResourceRouter('application', ctx);
     applicationRouter.forEach(route => route.path = `/api${route.path}`);
 
@@ -27,6 +25,14 @@ module.exports = ctx => {
             middlewares: [],
             
             action: ctx.controllers.application.getMethod('enableById')
+        },
+
+        {
+            method: 'get',
+            path: '/api/application/key/:api_key',
+            middlewares: [],
+            
+            action: ctx.controllers.application.getMethod('findByAPIKey')
         },
 
         {

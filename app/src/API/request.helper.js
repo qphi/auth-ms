@@ -13,7 +13,7 @@ class RequestHelper {
     }
 
     getRefreshToken(request) {
-        const clientData = request.service;
+        const clientData = request.applicationSettings;
         const refreshToken = this.services.cookie.get(request, clientData.COOKIE_JWT_REFRESH_NAME);
 
         if (refreshToken === null) {
@@ -38,7 +38,7 @@ class RequestHelper {
     }
 
     getRefreshTokenSecret(request) {
-        return request.service.JWT_SECRET_REFRESHTOKEN;
+        return request.applicationSettings.JWT_SECRET_REFRESHTOKEN;
     }
 
 }

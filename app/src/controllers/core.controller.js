@@ -134,7 +134,7 @@ class CoreController extends BaseController {
     
         if (user !== null) {
             // Generate an access token
-            const userData = { username: user.username,  role: user.role };
+            const userData = { user_id: user._id };
             
             const {identityToken, refreshToken} = this.services.jwt.forgeToken(userData, clientSettings);
             

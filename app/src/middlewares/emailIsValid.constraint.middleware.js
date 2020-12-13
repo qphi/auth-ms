@@ -3,8 +3,6 @@ const STATUS_CODE = require('../../config/status-code.config');
 
 module.exports = (request, response, next) => {
     const email = request.body.email;
-
-    
     if (
         typeof email === 'string'
         

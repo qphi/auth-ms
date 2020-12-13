@@ -65,7 +65,6 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
         else {
             return result[0];
         }
-      
     }
 
     async findById(_id) {
