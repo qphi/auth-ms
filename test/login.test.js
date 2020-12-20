@@ -29,10 +29,7 @@ describe('[Dynamo] Login', () => {
             purgeDB().then(() => {
                 const port = process.env.PORT;
            
-                console.log({
-                    confirmPassword: fixtures.users.existingUser.password,
-                    ...fixtures.users.existingUser
-                })
+    
                 //done();
                 axios.post('http://localhost:' + port + '/api/register', {
                     confirmPassword: fixtures.users.existingUser.password,

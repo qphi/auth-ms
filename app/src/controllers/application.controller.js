@@ -34,7 +34,7 @@ class ApplicationController extends BaseController {
             name: name,
             icon_src: '',
 
-            JWT_ACCESS_TTL: 180000,
+            JWT_ACCESS_TTL: 180,
             JWT_SECRET_ACCESSTOKEN: sha256(`jwt-${name}-access-token-${SALT}`), 
             JWT_SECRET_REFRESHTOKEN: sha256(`jwt-${name}-refresh-token-${SALT}`), 
             JWT_SECRET_FORGOTPASSWORDTOKEN: sha256(`jwt-${name}-forgotpassword-token-${SALT}`), 
@@ -92,17 +92,15 @@ class ApplicationController extends BaseController {
     
     async findByAPIKey(request, response) {
         const api_key = request.params.api_key;
-
-
-        console.log(api_key, request.params)
         const result = await this.spi.customerApplicationPersistence.findByAPIKey(api_key);
+
         return response.json(result); 
     }
 
     async findById(request, response) {
         const application_uuid = request.params._id;
-        console.log(application_uuid, request.params)
         const result = await this.spi.customerApplicationPersistence.findById(application_uuid);
+        
         return response.json(result); 
     }
 

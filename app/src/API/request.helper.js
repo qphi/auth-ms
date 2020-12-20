@@ -14,9 +14,9 @@ class RequestHelper {
 
     getRefreshToken(request) {
         const clientData = request.applicationSettings;
-        const refreshToken = this.services.cookie.get(request, clientData.COOKIE_JWT_REFRESH_NAME);
+        const refreshToken = request.body[clientData.COOKIE_JWT_REFRESH_NAME];
 
-        if (refreshToken === null) {
+        if (refreshToken === null || typeof refreshToken === 'undefined') {
             throw new MissingRefreshToken(`missing token from ${clientData.COOKIE_JWT_REFRESH_NAME}`);
         }
 
@@ -26,7 +26,9 @@ class RequestHelper {
     }
 
     getIdentityToken(request) {
-        const identityToken = request.body.identityToken;
+        const { applicationSettings, body } = request;
+        const identityToken = body[applicationSettings.COOKIE_JWT_ACCESS_NAME];
+
 
         if (typeof identityToken !== 'string') {
             throw new MissingIdentityTokenException();

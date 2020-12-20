@@ -55,7 +55,7 @@ DB_USER=auth_ms_user
 DB_NAME=auth_ms_db
 DB_PASSWORD=<PASSWORD>
 
-JWT_ACCESS_TTL= 180000 # 3 min
+JWT_ACCESS_TTL= 1800 # 3 min
 JWT_SECRET_ACCESSTOKEN=bd715a978b0d2caa370a925755f83a20bc68572279e7f93d9bec79c8904ef12f #hash('sha256', "jwt-qp-access-token")
 
 JWT_SECRET_REFRESHTOKEN=b4153dedfdbd22b188689f3bac33461679269b1770f522c269563fd6d5c17da2 #hash('sha256', "jwt-qp-refresh-token")
@@ -75,7 +75,7 @@ This prototype still use a mock to record application. If you need to test with 
  servicesRecorded: {
         'my-app': {
             DB_TYPE: 'mysql',
-            JWT_ACCESS_TTL: 180000,
+            JWT_ACCESS_TTL: 1800,
             JWT_SECRET_ACCESSTOKEN: <hash('sha256', "my-app-jwt-access")>,
             JWT_SECRET_REFRESHTOKEN: <hash('sha256', "my-app-jwt-refresh") >,
             JWT_SECRET_FORGOTPASSWORDTOKEN: <hash('sha256', "my-app-jwt-forgotpassword")>,

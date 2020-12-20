@@ -16,6 +16,9 @@ class BackOfficeController extends BaseController {
         });
     }
 
+    hello(request, response) {
+        response.send('hello');
+    }
 
 
     renderLogin(request, response) {

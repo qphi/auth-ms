@@ -9,7 +9,7 @@ class JwtService extends JwtVerifierService {
      */
     sign(data, secret, ttl) {
         return jwt.sign(data, secret,         
-            ttl ? { expiresIn: ttl + 'ms' } : {}
+            ttl ? { expiresIn: ttl } : {}
         );
     }
 }

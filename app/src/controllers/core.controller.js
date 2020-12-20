@@ -13,6 +13,7 @@ const STATUS_CODE = require('../../config/status-code.config');
 
 const { param } = require('../dev.application-state');
 const ApplicationNameIsNotAvailableException = require('../Exceptions/ApplicationNameIsNotAvailable.exception');
+const { PROCESS_ABORTED } = require('../../config/status-code.config');
 
 class CoreController extends BaseController {
     constructor(settings = { services : {} }) {
@@ -47,24 +48,30 @@ class CoreController extends BaseController {
     async generateIdentityToken(request, response) {
         try {
             const identityToken = this.api.requestAdapter.getIdentityToken(request);
-            const identityTokenSecret = this.api.requestAdapter.getIdentityTokenSecret(request);
+            const identityTokenSecret = request.applicationSettings.JWT_SECRET_ACCESSTOKEN;
+            const identityPayload = await this.services.jwt.verify(identityToken, identityTokenSecret, {
+                ignoreExpiration: true,
+                ignorePreventExpiration: true
+            });
+            
+            const nowInSeconds = Math.ceil(Date.now() / 1000);
+            
+            if (identityPayload.expire > nowInSeconds) {
+                throw new InvalidTokenException('This token is not expired !');
+            }
+            
 
-            const identityPayload = await this.services.jwt.verify(identityToken, identityTokenSecret)
-            
-            
-            // tod
             const refreshToken = await this.services.jwt.getRefreshToken(request);
             const refreshTokenSecret = this.api.requestAdapter.getRefreshTokenSecret(request);
-            const refreshPayload = this.services.jwt.verify(refreshToken, refreshTokenSecret);
+            const refreshPayload = await this.services.jwt.verify(refreshToken, refreshTokenSecret);
             
             if (
                 (
                     typeof identityPayload.user_id === 'string' &&
                     identityPayload.user_id.length > 10 &&
                     identityPayload.user_id === refreshPayload.user_id &&
-                    typeof identityPayload.refresh === 'string' &&
-                    identityPayload.refresh.length > 10 &&
-                    identityPayload.refresh === refreshPayload.salt
+                    typeof identityPayload.salt === 'string' &&
+                    identityPayload.salt === refreshPayload.salt
                 ) !== true 
             ) {
                 throw new InvalidTokenException('try to refresh with an incorrect identity');
@@ -72,7 +79,7 @@ class CoreController extends BaseController {
             
             const userData = { 
                 user_id: refreshPayload.user_id,
-                refresh: refreshPayload.salt
+                salt: refreshPayload.salt
             };
 
             const clientSettings = this.services.jwt.getClientSettings(request);
@@ -84,23 +91,40 @@ class CoreController extends BaseController {
                 newIdentityToken
             );
 
-            return response.sendStatus(200);
+            return response.status(200).json({
+                status: STATUS_CODE.PROCESS_DONE,
+                error: STATUS_CODE.NO_ERROR,
+                message: STATUS_CODE.LOGIN_SUCCESSFUL
+            });
         }   
         
         catch(error) {
+            console.error(error);
             if (error instanceof MissingRefreshTokenException) {
-                return response.sendStatus(401);
+                return response.status(401).json({
+                    error: STATUS_CODE.WITH_ERROR,
+                    status: STATUS_CODE.PROCESS_ABORTED,
+                    message: 'MissingRefreshTokenException'
+                });
             }
 
             else if (
                 error instanceof InvalidTokenException ||
                 error instanceof JsonWebTokenError
             ) {
-                return response.sendStatus(403);
+                return response.status(403).json({
+                    error: STATUS_CODE.WITH_ERROR,
+                    status: STATUS_CODE.PROCESS_ABORTED,
+                    message: 'Invalid token'
+                });
             }
 
             else {
-                return response.sendStatus(500);
+                return response.status(500).json({
+                    error: STATUS_CODE.WITH_ERROR,
+                    status: STATUS_CODE.PROCESS_ABORTED,
+                    message: error.message
+                });
             }
         }
     }
@@ -245,27 +269,6 @@ class CoreController extends BaseController {
         const forgotPasswordToken = this.services.jwt.forgotPasswordToken(data);
 
         await this.services.jwt.storeForgotPasswordToken(forgotPasswordToken, data);
-
-
-        // emit event => SQS ?
-        // this.services.mailer.sendMail({
-        //     from: 'authenticator-service@tesla.com', // Sender address
-        //     to: email,         // List of recipients
-        //     subject: 'Forgot Password', // Subject line
-        //     text: `
-        //         to reset your password please follow this link : ${this.getResetPasswordURL(service)}?token=${token}
-        //     ` // Plain text body
-        // }, 
-        
-        // (err, info) => {
-        //     if (err) {
-        //       console.log(err)
-        //     } else {
-        //       console.log(info);
-        //     }
-        // });
-
-        console.log('forgotPasswordToken', forgotPasswordToken);
 
         response.json(forgotPasswordToken);
     }

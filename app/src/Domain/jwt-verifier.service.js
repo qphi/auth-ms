@@ -1,28 +1,34 @@
-const { Singleton } = require('micro');
 const jwt = require('jsonwebtoken');
 const ExpiredTokenException = require('../Exceptions/ExpiredToken.exception');
 const TokenShouldBeRefreshedException = require('../Exceptions/TokenShouldBeRefreshed.exception');
 
 class JwtVerifierService {
-    verify(token, secret) {
-        console.log('verify', token, secret)
-        return new Promise(async resolve => {
+    /**
+     * 
+     * @param {string} token 
+     * @param {string} secret 
+     * @param {Object} options 
+     * @param {Boolean} options.ignoreExpiration Does not throw an error if exp date is expired 
+     * @param {Boolean} options.ignorePreventExpiration Does not throw an error if expiration date is expired or if service consider that token should be refreshed 
+     */
+    verify(token, secret, options = { ignoreExpiration: false, ignorePreventExpiration: false }) {
+        return new Promise(async (resolve, reject) => {
             let payload = null;
             try {
-                payload = await jwt.verify(token, secret);
+                payload = await jwt.verify(token, secret, options);
             }
 
             catch(error) {
-                console.error(error);
                 // send error to auth-ms service ?
-                if (error.name === 'TokenExpired') {
-                    throw new ExpiredTokenException();
+                if (error.name === 'TokenExpiredError') {
+                    reject(new ExpiredTokenException());
                 }
             }
 
-            
-            if (payload.expires >= Date.now()) {
-                throw new TokenShouldBeRefreshedException();
+            const nowInSeconds = Math.ceil(Date.now() / 1000);
+           
+            if (options.ignorePreventExpiration !== true && payload.expire < nowInSeconds) {
+                reject(new TokenShouldBeRefreshedException());
             }
             
             else {

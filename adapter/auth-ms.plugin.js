@@ -7,15 +7,10 @@ const AuthSPIService = require("./src/auth.service");
 const AuthenticatorMicroServiceController = require('./src/auth-ms-adapter.controller');
 
 module.exports = context => {
-    console.log('====================================');
-    console.log(context);
-
     if (typeof context.state.auth_ms === 'undefined') {
         context.state.auth_ms = new AuthState(context);
     }
-    console.log('====================================');
-    console.log(context);
-
+ 
     if (typeof context.api.authRequestHelper === 'undefined') {
         context.api.authRequestHelper = new AuthRequestHelper(context);
     }

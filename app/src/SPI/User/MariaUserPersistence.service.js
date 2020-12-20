@@ -32,7 +32,6 @@ class MariaUserPersistence {
     }
 
     async getConnexion(connectorName = 'mysql') {
-        console.log('connector', connectorName);
         /** @type Connector */
         const connector = this.getConnector(connectorName);
         return await connector.getConnexion()

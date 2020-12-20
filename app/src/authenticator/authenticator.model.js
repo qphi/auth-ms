@@ -21,8 +21,6 @@ class AuthenticatorMicroService extends MicroService {
         // const container = require('../DependancyInjection');
         const container = this.loadContainer(settings.config);
 
-        console.log(container);
-
         this.state = {
             db: null
         };
@@ -40,21 +38,6 @@ class AuthenticatorMicroService extends MicroService {
                 }
             })
         };
-
-        // this.services.api = new APIService({
-        //     services: {
-        //         db: this.services.db
-        //     }
-        // });
-
-        // console.log({
-        //     host: 'smtp.mailtrap.io',
-        //     port: 2525,
-        //     auth: {
-        //        user: process.env.MAILTRAP_USER_ID,
-        //        pass: process.env.MAILTRAP_PASSWORD
-        //     }
-        // })
 
         const context = {
             ...container,
@@ -89,7 +72,6 @@ class AuthenticatorMicroService extends MicroService {
     }
 
     initializeDBConnexion(db_type) {
-        console.log(db_type);
     
         if (typeof db_type === 'undefined' && process.env.NODE_ENV !== 'prod') {
             return;

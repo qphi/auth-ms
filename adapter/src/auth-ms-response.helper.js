@@ -19,7 +19,7 @@ class AuthResponseHelper {
             token, 
             { 
                 httpOnly: true, 
-                maxAge: this.state.jwtAccessTTL
+                maxAge: this.state.jwtAccessTTL + 60000
             }
         );
     }

@@ -1,7 +1,6 @@
 const RetrieveUserIdMiddlewareFactory = require('../src/retrieve-user-id.middleware');
 
 module.exports = ctx => {
-    // console.log(ctx);
     const RetrieveUserIdMiddleware = RetrieveUserIdMiddlewareFactory(ctx);
     return [
         {

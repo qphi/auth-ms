@@ -48,8 +48,6 @@ class AuthenticatorMicroServiceController extends BaseController {
             email, 
             password,
         });
- 
-        console.log('user found', result);
 
         if (result.success === true) {
             this.api.authResponseHelper.addIdentityToken(response, result.identityToken);
@@ -88,8 +86,6 @@ class AuthenticatorMicroServiceController extends BaseController {
                 password,
                 confirmPassword
             });
-
-            console.log(result);
 
             responseMessage = result.message;
             if (responseMessage.user_id !== null) {
@@ -143,27 +139,6 @@ class AuthenticatorMicroServiceController extends BaseController {
         const forgotPasswordToken = this.services.jwt.forgotPasswordToken(data);
 
         await this.services.jwt.storeForgotPasswordToken(forgotPasswordToken, data);
-
-
-        // emit event => SQS ?
-        // this.services.mailer.sendMail({
-        //     from: 'authenticator-service@tesla.com', // Sender address
-        //     to: email,         // List of recipients
-        //     subject: 'Forgot Password', // Subject line
-        //     text: `
-        //         to reset your password please follow this link : ${this.getResetPasswordURL(service)}?token=${token}
-        //     ` // Plain text body
-        // }, 
-        
-        // (err, info) => {
-        //     if (err) {
-        //       console.log(err)
-        //     } else {
-        //       console.log(info);
-        //     }
-        // });
-
-        console.log('forgotPasswordToken', forgotPasswordToken);
 
         response.json(forgotPasswordToken);
     }

@@ -6,7 +6,6 @@
   "scripts": {
     "dev-env": "cross-env NODE_ENV=dev node ./app",
     "test-env": "cross-env NODE_ENV=test node ./app",
-    
     "test": "cross-env NODE_ENV=test mocha --timeout 50000",
     "test-mock": "cross-env NODE_ENV=mock mocha --timeout 50000"
   },

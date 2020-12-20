@@ -66,7 +66,7 @@ module.exports = ctx => {
         }, 
 
         {
-            method:'get',
+            method:'post',
             path: '/api/token',
             middlewares: [ RetrieveServiceMiddleware ],
             action: ctx.controllers.core.getMethod('generateIdentityToken')
@@ -145,6 +145,12 @@ module.exports = ctx => {
             method:'get',
             path: '/records',
             action: ctx.controllers.bo.getMethod('renderListServices')
+        },
+
+        {
+            method:'get',
+            path: '/',
+            action: ctx.controllers.bo.getMethod('hello')
         }
     ])
 }

@@ -42,8 +42,8 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
         catch(error) {
             if (error.code === 'ConditionalCheckFailedException') {
                 const exists = await this.model.get(settings.MS_UUID);
+                
                 if (typeof exists !== 'undefined') {
-                    console.log('je lance lecpet');
                     throw new ApplicationNameIsNotAvailableException(settings.name);
                 }
             }           

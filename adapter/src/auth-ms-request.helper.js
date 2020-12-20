@@ -6,9 +6,8 @@ const MissingIdentityToken = require('../../app/src/Exceptions/MissingIdentityTo
  */
 class AuthRequestHelper {
     constructor(context) {
-        
-        console.log(context);
         let cookieService = CookieService;
+        
         if (
             typeof context.services !== 'undefined' &&
             typeof context.services.cookie !== 'undefined'

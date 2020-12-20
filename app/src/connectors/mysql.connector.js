@@ -29,7 +29,7 @@ class MySQLConnector extends Connector {
         try {
             connexion = await this.getConnexion();
             const query = `CREATE TABLE ${service.name} (email char(64) not null unique, password char(64) not null, role varchar(10) not null, uuid char(36) primary key);`;
-            console.log(query, service);
+      
             const rows = await connexion.query(query,
             [
                 service.name
@@ -67,7 +67,6 @@ class MySQLConnector extends Connector {
                 ?
             );`;
 
-            console.log(query, service);
             const rows = await connexion.query(query,
             [
                 service.DB_TYPE,
@@ -102,7 +101,7 @@ class MySQLConnector extends Connector {
             );
             `;
 
-            console.log(query, service);
+      
             const rows = await connexion.query(query,
             [
                 service.MS_UUID,
@@ -127,7 +126,7 @@ class MySQLConnector extends Connector {
             WHERE a.MS_UUID = b.MS_UUID AND a.MS_UUID = ?;
             `;
 
-            console.log(query);
+     
             const rows = await connexion.query(query,
             [
                 ms_uuid

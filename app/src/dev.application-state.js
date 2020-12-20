@@ -1,4 +1,4 @@
-const _6hours = 518400000;
+const _6hoursInSeconds = 518400;
 
 const domain = {
     jwt: require('../src/Domain/jwt.service'),
@@ -10,8 +10,8 @@ module.exports = {
     },
 
     params: {
-        forgotPasswordTokenTTL: _6hours,
-        refreshPasswordTokenTTL: _6hours,
+        forgotPasswordTokenTTL: _6hoursInSeconds,
+        refreshTokenTTL: _6hoursInSeconds,
         DYNAMO_API_KEY_INDEX_NAME: process.env.DYNAMO_API_KEY_INDEX_NAME
     },
 

@@ -25,10 +25,10 @@ class JWTService {
 
     async getRefreshToken(request) {
         const refreshToken = this.api.requestAdapter.getRefreshToken(request);
-        
-        if (await this.spi.jwtPersistence.hasRefreshToken(refreshToken)) {
-            throw new InvalidTokenException();
-        }
+      
+        // if (await this.spi.jwtPersistence.hasRefreshToken(refreshToken)) {
+        //     throw new InvalidTokenException();
+        // }
 
         return refreshToken;
     }
@@ -67,15 +67,14 @@ class JWTService {
      * @param {Mixed} clientSettings 
      */
     forgeIdentityToken(payload, clientSettings) {
-        const safeExpiration = Date.now() +  clientSettings.JWT_ACCESS_TTL;
+        const nowInSeconds = Math.ceil(Date.now() / 1000);
+        const safeExpiration = nowInSeconds + clientSettings.JWT_ACCESS_TTL;
         payload.expire = safeExpiration;
-
-        console.log('forge identity', payload);
 
         return this.domain.jwt.sign(
             payload, 
             clientSettings.JWT_SECRET_ACCESSTOKEN,
-            600000 + clientSettings.JWT_ACCESS_TTL
+            600 + clientSettings.JWT_ACCESS_TTL // allow refresh token expired from less than 10 min
         );
     }
 
@@ -85,7 +84,7 @@ class JWTService {
      */
     forgeRefreshToken(payload, clientSettings) {
         const forgotPasswordTTL = params.refreshTokenTTL;
-         const safeExpiration = Date.now() + forgotPasswordTTL;
+         const safeExpiration = Math.ceil((Date.now() / 1000)) + forgotPasswordTTL;
         payload.expire = safeExpiration;
         return this.domain.jwt.sign(
             payload, 
@@ -126,7 +125,7 @@ class JWTService {
     }
 
     verify(token, secret, options = {}) {
-        return this.domain.jwt.sign(
+        return this.domain.jwt.verify(
             token, 
             secret,
             options
