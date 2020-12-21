@@ -23,10 +23,10 @@ class DynamoUserPersistence extends DynamoProvider {
     }
 
 
-    async findByCredentials(email, password, clientSettings = {}) {
+    async findByCredentials(email, password, applicationSettings = {}) {
         const result =  await this.model.get({ 
             email,
-            application_uuid: clientSettings.MS_UUID
+            application_uuid: applicationSettings.MS_UUID
         });
 
 
@@ -51,7 +51,7 @@ class DynamoUserPersistence extends DynamoProvider {
     async getUserUUID(email, service) {
         const user = await this.model.get({ 
             email,
-            application_uuid: clientSettings.MS_UUID
+            application_uuid: applicationSettings.MS_UUID
         });
 
         return user.uuid;
@@ -60,10 +60,10 @@ class DynamoUserPersistence extends DynamoProvider {
     /**
      * @override
      * @param {Mixed} userData 
-     * @param {Mixed} clientSettings 
+     * @param {Mixed} applicationSettings
      */
-    async create(userData, clientSettings) {
-        userData.application_uuid = clientSettings.MS_UUID;
+    async create(userData, applicationSettings) {
+        userData.application_uuid = applicationSettings.MS_UUID;
 
         try {
             await super.create(userData);
@@ -81,7 +81,7 @@ class DynamoUserPersistence extends DynamoProvider {
             // selector
             {
                 uuid,
-                application_uuid: clientSettings.MS_UUID
+                application_uuid: applicationSettings.MS_UUID
             }, 
             // updates
             {

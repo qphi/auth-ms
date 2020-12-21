@@ -1,13 +1,22 @@
 const { BaseController } = require('micro');
 
 const STATUS_CODE = require('../../app/config/status-code.config');
-const AuthRequestHelper = require('./auth-ms-request.helper');
+const AuthRequestHelper = require('./request.helper');
+
+/**
+ * @typedef Response
+ * @extends ServerResponse
+ * @method redirect
+ */
 
 class AuthenticatorMicroServiceController extends BaseController {
     /**
      * @param {Object} context 
      * @param {Object} context.services 
      * @param {AuthSPIService} context.services.authService
+     * @param {Object} context.api
+     * @param {AuthRequestHelper} context.api.authRequestHelper
+     * @param {AuthResponseHelper} context.api.authResponseHelper
      */
     constructor(context = {}) {
         super(context);
@@ -31,12 +40,13 @@ class AuthenticatorMicroServiceController extends BaseController {
 
     async onLogout(request, response) {
         try {
-            await this.api.authResponsetHelper.clearCredentials(request, response);
+            await this.api.authResponseHelper.clearCredentials(response);
             response.redirect('/');
         }
 
         catch(error) {
-            response.sendStatus(500);
+            console.error(error);
+            response.status(500).end();
         }
     }
 
@@ -44,6 +54,9 @@ class AuthenticatorMicroServiceController extends BaseController {
         const email = this.api.authRequestHelper.getEmail(request);
         const password = this.api.authRequestHelper.getPassword(request);
 
+        /**
+         * @type {{identityToken : string, refreshToken: string, success: boolean}}
+         */
         const result = await this.services.authenticator.login({
             email, 
             password,
@@ -76,11 +89,14 @@ class AuthenticatorMicroServiceController extends BaseController {
         const password = this.api.authRequestHelper.getPassword(request);
         const confirmPassword = this.api.authRequestHelper.getConfirmPassword(request);
 
-        const responseMessage = {}
+        let responseMessage = {}
         let status = 201;
 
         try {
-           
+
+            /**
+             * @type {{ message: Object }}
+             */
             const result = await this.services.authenticator.register({
                 email, 
                 password,
@@ -114,37 +130,15 @@ class AuthenticatorMicroServiceController extends BaseController {
 
     async onForgotPassword(request, response) {
         const email = this.api.userRequestAdapter.getEmail(request);
-        const clientSettings =  this.services.jwt.getClientSettings(request);
+        const result = await this.services.authenticator.forgotPassword(email);
 
-        const uuid = await this.spi.userPersistence.getUserUUID(
-            sha256(email), 
-            clientSettings
-        );
-
-        if (uuid === null) {
-            return response.sendStatus(200);
-        }
-
-        const now = Date.now();
-        const forgotPasswordTTL = params.forgotPasswordTokenTTL;
-        const expire = now + forgotPasswordTTL;
-
-        const data = {
-            user_uuid: uuid, 
-            service_uuid: clientSettings.MS_UUID, 
-            created_at: now, 
-            expire_at: expire
-        };
-
-        const forgotPasswordToken = this.services.jwt.forgotPasswordToken(data);
-
-        await this.services.jwt.storeForgotPasswordToken(forgotPasswordToken, data);
-
-        response.json(forgotPasswordToken);
+        response.json({
+            message: 'done'
+        });
     }
 
     async onResetPassword(request, response) {
-        const clientSettings =  this.services.jwt.getClientSettings(request);
+        const applicationSettings =  this.services.jwt.getapplicationSettings(request);
         const forgotPasswordToken = request.body.token;
         const password = request.body.password;
 
@@ -152,7 +146,7 @@ class AuthenticatorMicroServiceController extends BaseController {
 
         // check if token is valid
         try {
-            tokenData = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, clientSettings);
+            tokenData = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, applicationSettings);
             //await this.spi.jwtPersistence.deleteToken(forgotPasswordToken);    
             await this.services.jwt.clear(request, response);
         }
@@ -193,9 +187,9 @@ class AuthenticatorMicroServiceController extends BaseController {
         return response.sendStatus(200);
     }
 
-    getResetPasswordURL(clientSettings) {
-        if (clientSettings.FORGOT_PASSWORD_URL) {
-            return clientSettings.FORGOT_PASSWORD_URL;
+    getResetPasswordURL(applicationSettings) {
+        if (applicationSettings.FORGOT_PASSWORD_URL) {
+            return applicationSettings.FORGOT_PASSWORD_URL;
         }
 
         else {

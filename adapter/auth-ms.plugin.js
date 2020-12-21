@@ -1,10 +1,10 @@
 const JwtVerifierService = require("../app/src/Domain/jwt-verifier.service");
-const AuthRequestHelper = require("./src/auth-ms-request.helper")
-const AuthResponseHelper = require("./src/auth-ms-response.helper")
+const AuthRequestHelper = require("./src/request.helper")
+const AuthResponseHelper = require("./src/response.helper")
 const AuthState = require("./src/auth-ms-adapter.state");
 const UserRequestHelper = require("../app/src/API/UserRequest.helper");
 const AuthSPIService = require("./src/auth.service");
-const AuthenticatorMicroServiceController = require('./src/auth-ms-adapter.controller');
+const AuthenticatorMicroServiceController = require('./src/controller');
 
 module.exports = context => {
     if (typeof context.state.auth_ms === 'undefined') {

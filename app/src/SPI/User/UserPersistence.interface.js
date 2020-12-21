@@ -12,19 +12,24 @@ class UserPersistenceInterface {
     }
 
     async findByCredentials(email, password, service) {
-        throw new AbstractMethodNotImplementedException(arguments.callee.toString());
+        throw new AbstractMethodNotImplementedException();
     }
 
+    /**
+     * @param email
+     * @param service
+     * @returns {string | null}
+     */
     async getUserUUID(email, service) {
-        throw new AbstractMethodNotImplementedException(arguments.callee.toString());
+        throw new AbstractMethodNotImplementedException();
     }
 
     async createUser(userData, service) {
-        throw new AbstractMethodNotImplementedException(arguments.callee.toString());  
+        throw new AbstractMethodNotImplementedException();
     }
 
     async updateUserPassword(uuid, newPassword, service) {
-        throw new AbstractMethodNotImplementedException(arguments.callee.toString());
+        throw new AbstractMethodNotImplementedException();
     }
 }
 

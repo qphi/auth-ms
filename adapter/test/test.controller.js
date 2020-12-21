@@ -13,6 +13,10 @@ class TestController extends BaseController {
         });
     }
 
+    serveHome(request, response) {
+        response.send('home sweet home (of mine)');
+    }
+
     serveRouteOnlyAllowedToMember(request, response) {
         if (request.user_id) {
             return response.json({

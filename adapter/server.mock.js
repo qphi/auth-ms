@@ -1,7 +1,7 @@
 const { MicroService, RoutingService } = require('micro');
 
 
-const recordedRoutes = require('./src/auth-ms-adapter.router');
+const recordedRoutes = require('./src/router');
 const testRoutes = require('./test/test.router');
 
 const AuthenticatorMicroServicePlugin = require('./auth-ms.plugin');

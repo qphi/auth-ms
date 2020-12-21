@@ -51,76 +51,78 @@ class JWTService {
         }
     }
 
-    getClientSettings(request) {
+    getapplicationSettings(request) {
         return request.applicationSettings;
     }
 
     async clear(request, response) {
         await this.deleteRefreshToken(request);
 
-        const clientSettings = this.getClientSettings(request);
-        this.api.responseAdapter.removeTokens(response, clientSettings);
+        const applicationSettings = this.getapplicationSettings(request);
+        this.api.responseAdapter.removeTokens(response, applicationSettings);
     }
 
     /**
-     * @param {Mixed} payload 
-     * @param {Mixed} clientSettings 
+     * @param {Object} payload
+     * @param {Object} applicationSettings
      */
-    forgeIdentityToken(payload, clientSettings) {
+    forgeIdentityToken(payload, applicationSettings) {
         const nowInSeconds = Math.ceil(Date.now() / 1000);
-        const safeExpiration = nowInSeconds + clientSettings.JWT_ACCESS_TTL;
+        const safeExpiration = nowInSeconds + applicationSettings.JWT_ACCESS_TTL;
         payload.expire = safeExpiration;
 
         return this.domain.jwt.sign(
             payload, 
-            clientSettings.JWT_SECRET_ACCESSTOKEN,
-            600 + clientSettings.JWT_ACCESS_TTL // allow refresh token expired from less than 10 min
+            applicationSettings.JWT_SECRET_ACCESSTOKEN,
+            600 + applicationSettings.JWT_ACCESS_TTL // allow refresh token expired from less than 10 min
         );
     }
 
     /**
-     * @param {Mixed} payload 
-     * @param {Mixed} clientSettings 
+     * @param {Object} payload
+     * @param {Object} applicationSettings
+     * @param {string} applicationSettings.JWT_SECRET_REFRESHTOKEN
      */
-    forgeRefreshToken(payload, clientSettings) {
+    forgeRefreshToken(payload, applicationSettings) {
         const forgotPasswordTTL = params.refreshTokenTTL;
          const safeExpiration = Math.ceil((Date.now() / 1000)) + forgotPasswordTTL;
         payload.expire = safeExpiration;
         return this.domain.jwt.sign(
             payload, 
-            clientSettings.JWT_SECRET_REFRESHTOKEN,
+            applicationSettings.JWT_SECRET_REFRESHTOKEN,
             forgotPasswordTTL
         );
     }
  
       /**
      * @param {Mixed} payload 
-     * @param {Mixed} clientSettings 
+     * @param {Object} applicationSettings
+     * @param {string} applicationSettings.JWT_SECRET_FORGOTPASSWORDTOKEN
      */
-    forgeForgotPasswordToken(payload, clientSettings) {
+    forgeForgotPasswordToken(payload, applicationSettings = {JWT_SECRET_FORGOTPASSWORDTOKEN : ''}) {
         return this.domain.jwt.sign(
             payload, 
-            clientSettings.JWT_SECRET_FORGOTPASSWORDTOKEN
+            applicationSettings.JWT_SECRET_FORGOTPASSWORDTOKEN
         );
     }
 
     /**
-     * @param {Mixed} payload 
-     * @param {Mixed} clientSettings 
+     * @param {Object} payload
+     * @param {Object} applicationSettings
      */
-    forgeToken(payload, clientSettings) {     
+    forgeToken(payload, applicationSettings) {
         payload.salt = crypto.randomBytes(10).toString('hex');
         
         return {
-            identityToken: this.forgeIdentityToken(payload, clientSettings),
-            refreshToken: this.forgeRefreshToken(payload, clientSettings)
+            identityToken: this.forgeIdentityToken(payload, applicationSettings),
+            refreshToken: this.forgeRefreshToken(payload, applicationSettings)
         };
     }
 
-    verifyForgotPasswordToken(forgotPasswordToken, clientSettings) {
+    verifyForgotPasswordToken(forgotPasswordToken, applicationSettings) {
        return this.verify(
             forgotPasswordToken,
-            clientSettings.JWT_SECRET_FORGOTPASSWORDTOKEN
+            applicationSettings.JWT_SECRET_FORGOTPASSWORDTOKEN
         );  
     }
 

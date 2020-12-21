@@ -11,7 +11,7 @@ const JWTPersistenceInterface = require('../SPI/JWT/JWTPersistence.interface');
 
 const STATUS_CODE = require('../../config/status-code.config');
 
-const { param } = require('../dev.application-state');
+const { params } = require('../dev.application-state');
 const ApplicationNameIsNotAvailableException = require('../Exceptions/ApplicationNameIsNotAvailable.exception');
 const { PROCESS_ABORTED } = require('../../config/status-code.config');
 
@@ -82,12 +82,12 @@ class CoreController extends BaseController {
                 salt: refreshPayload.salt
             };
 
-            const clientSettings = this.services.jwt.getClientSettings(request);
-            const newIdentityToken = this.services.jwt.forgeIdentityToken(userData, clientSettings);
+            const applicationSettings = this.services.jwt.getapplicationSettings(request);
+            const newIdentityToken = this.services.jwt.forgeIdentityToken(userData, applicationSettings);
     
             this.api.responseHelper.addIdentityToken(
                 response, 
-                clientSettings, 
+                applicationSettings,
                 newIdentityToken
             );
 
@@ -142,7 +142,7 @@ class CoreController extends BaseController {
     }
 
     async onLogin(request, response) {
-        const clientSettings = this.services.jwt.getClientSettings(request);
+        const applicationSettings = this.services.jwt.getapplicationSettings(request);
         // Read username and password from request body
         const email = this.api.userRequestAdapter.getEmail(request);
         const password = this.api.userRequestAdapter.getPassword(request);
@@ -150,7 +150,7 @@ class CoreController extends BaseController {
        const user = await this.spi.userPersistence.findByCredentials(
             email, 
             password, 
-            clientSettings
+            applicationSettings
         );
  
         // Filter user from the users array by username and password
@@ -160,12 +160,12 @@ class CoreController extends BaseController {
             // Generate an access token
             const userData = { user_id: user._id };
             
-            const {identityToken, refreshToken} = this.services.jwt.forgeToken(userData, clientSettings);
+            const {identityToken, refreshToken} = this.services.jwt.forgeToken(userData, applicationSettings);
             
             this.spi.jwtPersistence.storeRefreshToken(refreshToken);
 
-            this.api.responseHelper.addIdentityToken(response, clientSettings, identityToken, false);
-            this.api.responseHelper.addRefreshToken(response, clientSettings, refreshToken, false);
+            this.api.responseHelper.addIdentityToken(response, applicationSettings, identityToken, false);
+            this.api.responseHelper.addRefreshToken(response, applicationSettings, refreshToken, false);
 
             return response.status(200).send({
                 message: STATUS_CODE.LOGIN_SUCCESSFUL,
@@ -205,7 +205,7 @@ class CoreController extends BaseController {
         let status = 201;
 
         try {
-            const clientSettings =  this.services.jwt.getClientSettings(request);
+            const applicationSettings =  this.services.jwt.getapplicationSettings(request);
             const userData = {
                 email: email, 
                 password: password,
@@ -214,7 +214,7 @@ class CoreController extends BaseController {
 
             responseMessage.user_id = await this.spi.userPersistence.create(
                 userData, 
-                clientSettings
+                applicationSettings
             );
 
 
@@ -244,37 +244,40 @@ class CoreController extends BaseController {
 
     async onForgotPassword(request, response) {
         const email = this.api.userRequestAdapter.getEmail(request);
-        const clientSettings =  this.services.jwt.getClientSettings(request);
+        const applicationSettings =  this.services.jwt.getapplicationSettings(request);
 
         const uuid = await this.spi.userPersistence.getUserUUID(
             sha256(email), 
-            clientSettings
+            applicationSettings
         );
 
         if (uuid === null) {
             return response.sendStatus(200);
         }
 
-        const now = Date.now();
+        const now = Math.ceil(Date.now() / 1000); // in seconds;
         const forgotPasswordTTL = params.forgotPasswordTokenTTL;
         const expire = now + forgotPasswordTTL;
 
         const data = {
             user_uuid: uuid, 
-            service_uuid: clientSettings.MS_UUID, 
+            service_uuid: applicationSettings.MS_UUID,
             created_at: now, 
             expire_at: expire
         };
 
-        const forgotPasswordToken = this.services.jwt.forgotPasswordToken(data);
+        const forgotPasswordToken = this.services.jwt.forgeForgotPasswordToken(data);
 
         await this.services.jwt.storeForgotPasswordToken(forgotPasswordToken, data);
+
+        this.spi.userNotification.notifyForgotPassword(email, forgotPasswordToken, applicationSettings.name);
+
 
         response.json(forgotPasswordToken);
     }
 
     async onResetPassword(request, response) {
-        const clientSettings =  this.services.jwt.getClientSettings(request);
+        const applicationSettings =  this.services.jwt.getapplicationSettings(request);
         const forgotPasswordToken = request.body.token;
         const password = request.body.password;
 
@@ -282,7 +285,7 @@ class CoreController extends BaseController {
 
         // check if token is valid
         try {
-            tokenData = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, clientSettings);
+            tokenData = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, applicationSettings);
             //await this.spi.jwtPersistence.deleteToken(forgotPasswordToken);    
             await this.services.jwt.clear(request, response);
         }
@@ -323,9 +326,9 @@ class CoreController extends BaseController {
         return response.sendStatus(200);
     }
 
-    getResetPasswordURL(clientSettings) {
-        if (clientSettings.FORGOT_PASSWORD_URL) {
-            return clientSettings.FORGOT_PASSWORD_URL;
+    getResetPasswordURL(applicationSettings) {
+        if (applicationSettings.FORGOT_PASSWORD_URL) {
+            return applicationSettings.FORGOT_PASSWORD_URL;
         }
 
         else {

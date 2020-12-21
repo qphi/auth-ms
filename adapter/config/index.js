@@ -1,5 +1,5 @@
 const { Test } = require('mocha');
-const AuthRequestHelper = require('../src/auth-ms-request.helper');
+const AuthRequestHelper = require('../src/request.helper');
 const TestController = require('../test/test.controller');
 
 function InjectContextFactory(type, target = '') {

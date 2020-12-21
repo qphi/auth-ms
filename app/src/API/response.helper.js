@@ -10,17 +10,17 @@ class ResponseHelper {
         }
     }
 
-    addIdentityToken(response, clientSettings, token, send = true) {
-        response.set(clientSettings.COOKIE_JWT_ACCESS_NAME, token);
+    addIdentityToken(response, applicationSettings, token, send = true) {
+        response.set(applicationSettings.COOKIE_JWT_ACCESS_NAME, token);
         // todo use response header
         
         // this.services.cookie.set(
         //     response,
-        //     clientSettings.COOKIE_JWT_ACCESS_NAME, 
+        //     applicationSettings.COOKIE_JWT_ACCESS_NAME,
         //     token, 
         //     { 
         //         httpOnly: true, 
-        //         maxAge: clientSettings.JWT_ACCESS_TTL
+        //         maxAge: applicationSettings.JWT_ACCESS_TTL
         //     }
         // );
 
@@ -29,11 +29,11 @@ class ResponseHelper {
         // }
     }
 
-    addRefreshToken(response, clientSettings, token, send = true) {
-        response.set(clientSettings.COOKIE_JWT_REFRESH_NAME, token);
+    addRefreshToken(response, applicationSettings, token, send = true) {
+        response.set(applicationSettings.COOKIE_JWT_REFRESH_NAME, token);
         // this.services.cookie.set(
         //     response,
-        //     clientSettings.COOKIE_JWT_REFRESH_NAME, 
+        //     applicationSettings.COOKIE_JWT_REFRESH_NAME,
         //     token, 
         //     { 
         //         httpOnly: true, 
@@ -46,16 +46,16 @@ class ResponseHelper {
         // }
     }
 
-    removeTokens(response, clientSettings) {
-        this.removeRefreshToken(response, clientSettings);
-        this.removeIdentityToken(response, clientSettings);
+    removeTokens(response, applicationSettings) {
+        this.removeRefreshToken(response, applicationSettings);
+        this.removeIdentityToken(response, applicationSettings);
     }
-    // removeRefreshToken(response, clientSettings) {
-    //     response.clearCookie(clientSettings.COOKIE_JWT_ACCESS_NAME);
+    // removeRefreshToken(response, applicationSettings) {
+    //     response.clearCookie(applicationSettings.COOKIE_JWT_ACCESS_NAME);
     // }
 
-    // removeIdentityToken(response, clientSettings) {
-    //     response.clearCookie(clientSettings.COOKIE_JWT_REFRESH_NAME);
+    // removeIdentityToken(response, applicationSettings) {
+    //     response.clearCookie(applicationSettings.COOKIE_JWT_REFRESH_NAME);
     // }
 }
 

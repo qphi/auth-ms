@@ -19,7 +19,7 @@ module.exports = ctx => {
         },
         
         {
-            method: 'post',
+            method: 'get',
             path: '/logout',
             action: ctx.controllers.authenticatorController.getMethod('onLogout')
         }, 

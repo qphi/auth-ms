@@ -146,6 +146,10 @@ class AuthSPIService {
             request.end();
         });
     }
+
+    forgotPassword(email) {
+        return this.post(this.state.endpoints.forgotPassword, { email });
+    }
 }
 
 module.exports = AuthSPIService;

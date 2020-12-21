@@ -6,14 +6,14 @@ class MockUserPersistence {
     constructor(context) {
     }
 
-    async findByCredentials(email, password, clientSettings = {}) {
+    async findByCredentials(email, password, applicationSettings = {}) {
         try {
             const users = Object.values(fixtures);
             const user = users.find(usr => {
                 return (
                     typeof usr.email !== 'undefined' &&
                     sha256(usr.email) === email &&
-                    usr.registered.indexOf(clientSettings.MS_UUID) >= 0
+                    usr.registered.indexOf(applicationSettings.MS_UUID) >= 0
                 );
             })
     
@@ -40,7 +40,7 @@ class MockUserPersistence {
             return (
                 typeof usr.email !== 'undefined' &&
                 sha256(usr.email) === email &&
-                usr.registered.indexOf(clientSettings.MS_UUID) >= 0
+                usr.registered.indexOf(applicationSettings.MS_UUID) >= 0
             );
         })
 
@@ -56,10 +56,10 @@ class MockUserPersistence {
     /**
      * @override
      * @param {Mixed} userData 
-     * @param {Mixed} clientSettings 
+     * @param {Mixed} applicationSettings
      */
-    async create(userData, clientSettings) {
-        userData.application_uuid = clientSettings.MS_UUID;
+    async create(userData, applicationSettings) {
+        userData.application_uuid = applicationSettings.MS_UUID;
         const id = crypto.randomBytes(16);
         userData.uuid = id;
 
@@ -77,7 +77,7 @@ class MockUserPersistence {
         const user = users.find(usr => {
             return (
                 usr.uuid === uuid &&
-                usr.registered.indexOf(clientSettings.MS_UUID) >= 0
+                usr.registered.indexOf(applicationSettings.MS_UUID) >= 0
             );
         })
 

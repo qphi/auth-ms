@@ -20,6 +20,14 @@ module.exports = ctx => {
             
             action: ctx.controllers.test.getMethod('serveLogin')
         },
+
+        {
+            method: 'get',
+            path: '/',
+            middlewares: [],
+
+            action: ctx.controllers.test.getMethod('serveHome')
+        },
         
     ]
 };
