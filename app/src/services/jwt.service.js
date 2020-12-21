@@ -51,14 +51,14 @@ class JWTService {
         }
     }
 
-    getapplicationSettings(request) {
+    getApplicationSettings(request) {
         return request.applicationSettings;
     }
 
     async clear(request, response) {
         await this.deleteRefreshToken(request);
 
-        const applicationSettings = this.getapplicationSettings(request);
+        const applicationSettings = this.getApplicationSettings(request);
         this.api.responseAdapter.removeTokens(response, applicationSettings);
     }
 
@@ -100,6 +100,7 @@ class JWTService {
      * @param {string} applicationSettings.JWT_SECRET_FORGOTPASSWORDTOKEN
      */
     forgeForgotPasswordToken(payload, applicationSettings = {JWT_SECRET_FORGOTPASSWORDTOKEN : ''}) {
+        console.log(applicationSettings)
         return this.domain.jwt.sign(
             payload, 
             applicationSettings.JWT_SECRET_FORGOTPASSWORDTOKEN

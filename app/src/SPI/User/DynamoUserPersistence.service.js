@@ -48,19 +48,26 @@ class DynamoUserPersistence extends DynamoProvider {
         }
     }
 
-    async getUserUUID(email, service) {
+    async getUserUUID(email, applicationSettings) {
+        /**
+         * @type {{
+         *     user_uuid: string
+         * }}
+         */
         const user = await this.model.get({ 
             email,
             application_uuid: applicationSettings.MS_UUID
         });
 
-        return user.uuid;
+        console.log(user);
+
+        return user.user_uuid;
     }
 
     /**
      * @override
-     * @param {Mixed} userData 
-     * @param {Mixed} applicationSettings
+     * @param {Object} userData
+     * @param {Object} applicationSettings
      */
     async create(userData, applicationSettings) {
         userData.application_uuid = applicationSettings.MS_UUID;

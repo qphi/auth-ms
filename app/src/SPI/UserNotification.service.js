@@ -8,7 +8,7 @@ class UserNotificationService {
        console.log(
            "=== UserNotificationService::notifyForgotPassword ===",
            {
-               email, token, name: applicationSettings.name
+               email, token, name: applicationSettings.name, url: applicationSettings.host + '/api/reset-password?token=' + token
            }
        )
     }

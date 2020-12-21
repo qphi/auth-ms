@@ -6,6 +6,9 @@ module.exports = ResourceSchema({
     schema: {
         // DB_TYPE: {type: String, required: true},
         name: {type: String, required: true },
+        host: {type: String, required: true },
+        img_src: {type: String, required: false, default: '' },
+        useCustomForgotPassword: {type: Boolean, required: false, default: false },
         JWT_ACCESS_TTL: { type: Number, required: true},
         JWT_SECRET_ACCESSTOKEN: { type: String, required: true },
         JWT_SECRET_REFRESHTOKEN: { type: String, required: true },

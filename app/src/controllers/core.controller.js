@@ -33,7 +33,9 @@ class CoreController extends BaseController {
             /** @type {UserPersistenceInterface} */
             userPersistence: settings.spi.userPersistence,
             /** @type {CustomerApplicationPersistenceInterface} */
-            customerApplicationPersistence: settings.spi.customerApplicationPersistence
+            customerApplicationPersistence: settings.spi.customerApplicationPersistence,
+
+            userNotification:  settings.spi.userNotification,
         }
 
         this.services.jwt = settings.services.jwt;
@@ -82,7 +84,7 @@ class CoreController extends BaseController {
                 salt: refreshPayload.salt
             };
 
-            const applicationSettings = this.services.jwt.getapplicationSettings(request);
+            const applicationSettings = this.services.jwt.getApplicationSettings(request);
             const newIdentityToken = this.services.jwt.forgeIdentityToken(userData, applicationSettings);
     
             this.api.responseHelper.addIdentityToken(
@@ -142,7 +144,7 @@ class CoreController extends BaseController {
     }
 
     async onLogin(request, response) {
-        const applicationSettings = this.services.jwt.getapplicationSettings(request);
+        const applicationSettings = this.services.jwt.getApplicationSettings(request);
         // Read username and password from request body
         const email = this.api.userRequestAdapter.getEmail(request);
         const password = this.api.userRequestAdapter.getPassword(request);
@@ -205,7 +207,7 @@ class CoreController extends BaseController {
         let status = 201;
 
         try {
-            const applicationSettings =  this.services.jwt.getapplicationSettings(request);
+            const applicationSettings =  this.services.jwt.getApplicationSettings(request);
             const userData = {
                 email: email, 
                 password: password,
@@ -243,8 +245,8 @@ class CoreController extends BaseController {
     }
 
     async onForgotPassword(request, response) {
-        const email = this.api.userRequestAdapter.getEmail(request);
-        const applicationSettings =  this.services.jwt.getapplicationSettings(request);
+        const email = request.body.email;
+        const applicationSettings =  this.services.jwt.getApplicationSettings(request);
 
         const uuid = await this.spi.userPersistence.getUserUUID(
             sha256(email), 
@@ -259,25 +261,42 @@ class CoreController extends BaseController {
         const forgotPasswordTTL = params.forgotPasswordTokenTTL;
         const expire = now + forgotPasswordTTL;
 
+        const idempotency_key =  sha256(applicationSettings.MS_UUID + email);
         const data = {
             user_uuid: uuid, 
             service_uuid: applicationSettings.MS_UUID,
             created_at: now, 
-            expire_at: expire
+            expire_at: expire,
+            target: idempotency_key
         };
 
-        const forgotPasswordToken = this.services.jwt.forgeForgotPasswordToken(data);
+        try {
+            const forgotPasswordToken = this.services.jwt.forgeForgotPasswordToken(data, applicationSettings);
+            await this.spi.jwtPersistence.storeForgotPasswordToken(forgotPasswordToken, data);
 
-        await this.services.jwt.storeForgotPasswordToken(forgotPasswordToken, data);
+            this.spi.jwtPersistence.remove({
+                target: idempotency_key,
+                token: token => token !== forgotPasswordToken
+            });
 
-        this.spi.userNotification.notifyForgotPassword(email, forgotPasswordToken, applicationSettings.name);
+            this.spi.userNotification.notifyForgotPassword(email, forgotPasswordToken, applicationSettings);
 
 
-        response.json(forgotPasswordToken);
+            response.json({
+                error: STATUS_CODE.NO_ERROR,
+                status: STATUS_CODE.PROCESS_DONE,
+                message: STATUS_CODE.PROCESS_DONE
+            });
+        }
+
+        catch (error) {
+            console.error(error);
+            response.sendStatus(500);
+        }
     }
 
     async onResetPassword(request, response) {
-        const applicationSettings =  this.services.jwt.getapplicationSettings(request);
+        const applicationSettings =  this.services.jwt.getApplicationSettings(request);
         const forgotPasswordToken = request.body.token;
         const password = request.body.password;
 

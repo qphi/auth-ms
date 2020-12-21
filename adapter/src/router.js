@@ -1,9 +1,10 @@
-const RetrieveUserMiddleware = require('../../app/src/middlewares/retrieveUser.middleware');
+const DecodeForgotPasswordToken = require('./decode-forgot-password-token.middleware');
 const ConfirmPasswordConstraint = require('../../app/src/middlewares/confirmPassword.middleware');
 const EmailIsValid = require('../../app/src/middlewares/emailIsValid.constraint.middleware');
 const PasswordIsNotTooWeakConstraint = require('../../app/src/middlewares/passwordIsNotTooWeak.constraint.middleware');
 const emailIsValidConstraintMiddleware = require('../../app/src/middlewares/emailIsValid.constraint.middleware');
 const aPasswordIsGivenConstraint = require('../../app/src/middlewares/aPasswordIsGiven.constraint');
+
 
 module.exports = ctx => {
     return [
@@ -51,7 +52,8 @@ module.exports = ctx => {
             method:'post',
             path: '/api/reset-password',
             middlewares: [
-                ConfirmPasswordConstraint
+                ConfirmPasswordConstraint,
+                DecodeForgotPasswordToken
             ],
 
             action: ctx.controllers.authenticatorController.getMethod('onResetPassword')

@@ -14,6 +14,8 @@ class AuthAdapterState {
         this.jwtAccessSecret = context.params.JWT_SECRET_ACCESSTOKEN;
         this.jwtAccessTTL = context.params.JWT_ACCESS_TTL;
 
+        this.jwtForgotPasswordSecret = context.params.JWT_SECRET_FORGOTPASSWORDTOKEN;
+
         this.hostname = process.env.AUTH_MS_BASE_URL;
         
         this.endpoints = {
@@ -21,7 +23,8 @@ class AuthAdapterState {
             register: '/api/register',
             retrieveSettings: '/api/application/key/',
             refresh: '/api/token/',
-            forgotPassword: '/api/forgot-password'
+            forgotPassword: '/api/forgot-password',
+            resetPassword: '/api/reset-password'
         };
     }
 }

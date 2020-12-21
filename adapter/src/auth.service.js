@@ -150,6 +150,10 @@ class AuthSPIService {
     forgotPassword(email) {
         return this.post(this.state.endpoints.forgotPassword, { email });
     }
+
+    resetPassword(payload) {
+        return this.post(this.state.endpoints.resetPassword, payload);
+    }
 }
 
 module.exports = AuthSPIService;

@@ -12,7 +12,7 @@ class BackOfficeController extends BaseController {
 
         response.render('forgot-password', {
             service_name: service.name,
-            service_img: service.ICON_SRC
+            service_img: service.icon_src
         });
     }
 

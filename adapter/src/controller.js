@@ -27,9 +27,7 @@ class AuthenticatorMicroServiceController extends BaseController {
             authRequestHelper: context.api.authRequestHelper,
 
             /** @type {AuthResponseHelper} */
-            authResponseHelper: context.api.authResponseHelper,
-
-            userRequestAdapter: context.api.userRequestAdapter
+            authResponseHelper: context.api.authResponseHelper
         };
 
         this.services = {
@@ -129,7 +127,7 @@ class AuthenticatorMicroServiceController extends BaseController {
     }
 
     async onForgotPassword(request, response) {
-        const email = this.api.userRequestAdapter.getEmail(request);
+        const email = this.api.authRequestHelper.getEmail(request);
         const result = await this.services.authenticator.forgotPassword(email);
 
         response.json({
@@ -138,52 +136,15 @@ class AuthenticatorMicroServiceController extends BaseController {
     }
 
     async onResetPassword(request, response) {
-        const applicationSettings =  this.services.jwt.getapplicationSettings(request);
-        const forgotPasswordToken = request.body.token;
+        const payload = request.tokenPayload;
         const password = request.body.password;
 
-        let tokenData = null;
+        console.log(payload, password);
+        const result = await this.services.authenticator.resetPassword({
+            target: payload.target,
+            created_at: payload.created_at
+        });
 
-        // check if token is valid
-        try {
-            tokenData = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, applicationSettings);
-            //await this.spi.jwtPersistence.deleteToken(forgotPasswordToken);    
-            await this.services.jwt.clear(request, response);
-        }
-
-        catch(err) {
-            return response.sendStatus(401);
-        }
-
-        // check integrity by retrieve it from our token storage
-        const storedTokenData = await this.spi.jwtPersistence.getForgotPasswordToken(forgotPasswordToken);
-
-        if (storedTokenData === null) {
-            return response.sendStatus(401);
-        }
-
-        
-        // duplicate custom field added by jwt-lib
-        // storedTokenData.iat = tokenData.iat;
-        // storedTokenData.exp = tokenData.exp;
-        delete tokenData.iat;
-        delete tokenData.exp;
-
-        // compare decoded content
-        if (JSON.stringify(tokenData) !== JSON.stringify(storedTokenData)) {
-            return response.sendStatus(401);
-        }
-
-        else {
-            // everything seems ok, just update the password
-            const user_uuid = storedTokenData.user_uuid;
-            await this.spi.userPersistence.updateUserPassword(
-                user_uuid, 
-                sha256(password), 
-                service
-            );
-        }
-        
         return response.sendStatus(200);
     }
 

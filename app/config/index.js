@@ -8,7 +8,7 @@ module.exports = {
     },
     
     spi: {
-        userNotification: require('../src/SPI/UserNotification.service')
+        userNotification: new (require('../src/SPI/UserNotification.service'))()
     },
 
     services: {},

@@ -33,7 +33,7 @@ class DynamoJWTPersistence extends DynamoProvider {
                 'dynamo',
                 {
                     expires: {
-                        ttl: day_in_ms
+                        ttl: Math.ceil(day_in_ms / 1000)
                     }
                 }
             ),
@@ -58,7 +58,7 @@ class DynamoJWTPersistence extends DynamoProvider {
         if (
             tokenData !== null &&
             tokenData.kind === kind &&
-            tokenData.expire < Date.now()
+            tokenData.expire < (Date.now() / 1000)
         ) {
             return tokenData;
         }
@@ -73,16 +73,23 @@ class DynamoJWTPersistence extends DynamoProvider {
             key: refreshToken,
             kind: TOKEN_TYPE.REFRESH,
             payload: '',
-            expire: parseInt(Date.now() + day_in_ms, 10)
+            expire: Math.ceil((Date.now() + day_in_ms) / 1000)
         });
     }
 
+    remove(selectors) {
+        // @todo https://github.com/qphi/auth-ms/projects/1#card-51616891
+    }
+
     async storeForgotPasswordToken(token, data) {
+        const target = data.target;
+        delete data.target;
         return await this.create({
             key: token,
             payload: JSON.stringify(data),
             kind: TOKEN_TYPE.FORGOT,
-            expire: Date.now() + _6hours
+            expire: Math.ceil((Date.now() + 30 * 60000) / 1000),
+            target
         });
     }
 
