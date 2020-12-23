@@ -261,10 +261,10 @@ class CoreController extends BaseController {
         const forgotPasswordTTL = params.forgotPasswordTokenTTL;
         const expire = now + forgotPasswordTTL;
 
-        const idempotency_key =  sha256(applicationSettings.MS_UUID + email);
+        const idempotency_key = sha256(applicationSettings.MS_UUID + email);
         const data = {
             user_uuid: uuid, 
-            service_uuid: applicationSettings.MS_UUID,
+            application_uuid: applicationSettings.MS_UUID,
             created_at: now, 
             expire_at: expire,
             target: idempotency_key
@@ -297,44 +297,75 @@ class CoreController extends BaseController {
 
     async onResetPassword(request, response) {
         const applicationSettings =  this.services.jwt.getApplicationSettings(request);
-        const forgotPasswordToken = request.body.token;
+        const target = request.body.target;
         const password = request.body.password;
 
-        let tokenData = null;
+        console.log('== reset password ==', applicationSettings, forgotPasswordToken, password);
 
-        // check if token is valid
+        let payload = null;
+
         try {
-            tokenData = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, applicationSettings);
-            //await this.spi.jwtPersistence.deleteToken(forgotPasswordToken);    
-            await this.services.jwt.clear(request, response);
+            const forgotPasswordToken = this.services.jwt.findForgotPasswordByTarget(target);
+
+            if (forgotPasswordToken === null) {
+                return response.status(401).json({
+                    error: STATUS_CODE.NO_ERROR,
+                    status: STATUS_CODE.PROCESS_ABORTED,
+                    message: `No token found with this target`
+                });
+            }
+
+            // decode token and verify token (exp and signature)
+            payload = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, applicationSettings);
+            
+            // check if application referred by API_KEY and application referred by forgotPasswordToken are the same
+            // (prevent malicious updates from anothers applications)
+            if (applicationSettings.application_uuid !== payload.application_uuid) {
+                return response.status(403).json({
+                    error: STATUS_CODE.NO_ERROR,
+                    status: STATUS_CODE.PROCESS_ABORTED,
+                    message: `${applicationSettings.API_KEY} is not allowed to perform this action`
+                });
+            }
         }
 
         catch(err) {
-            return response.sendStatus(401);
+            return response.status(401).json({
+                error: STATUS_CODE.NO_ERROR,
+                status: STATUS_CODE.PROCESS_ABORTED,
+                message: `Invalid token`
+            });
         }
+    
+        // check if payload was modified (compare content with an original persited version)
+        // @todo use signature matching https://github.com/qphi/auth-ms/projects/2#card-51736418
+        const persistedPayload = await this.spi.jwtPersistence.getForgotPasswordToken(forgotPasswordToken);
 
-        // check integrity by retrieve it from our token storage
-        const storedTokenData = await this.spi.jwtPersistence.getForgotPasswordToken(forgotPasswordToken);
-
-        if (storedTokenData === null) {
-            return response.sendStatus(401);
+        if (persistedPayload === null) {
+            return response.status(401).json({
+                error: STATUS_CODE.NO_ERROR,
+                status: STATUS_CODE.PROCESS_ABORTED,
+                message: `Invalid token`
+            });
         }
 
         
         // duplicate custom field added by jwt-lib
-        // storedTokenData.iat = tokenData.iat;
-        // storedTokenData.exp = tokenData.exp;
-        delete tokenData.iat;
-        delete tokenData.exp;
+        delete payload.iat;
+        delete payload.exp;
 
         // compare decoded content
-        if (JSON.stringify(tokenData) !== JSON.stringify(storedTokenData)) {
-            return response.sendStatus(401);
+        if (JSON.stringify(payload) !== JSON.stringify(persistedPayload)) {
+            return response.status(401).json({
+                error: STATUS_CODE.NO_ERROR,
+                status: STATUS_CODE.PROCESS_ABORTED,
+                message: `Invalid token`
+            });
         }
 
         else {
             // everything seems ok, just update the password
-            const user_uuid = storedTokenData.user_uuid;
+            const user_uuid = persistedPayload.user_uuid;
             await this.spi.userPersistence.updateUserPassword(
                 user_uuid, 
                 sha256(password), 

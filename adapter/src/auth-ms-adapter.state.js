@@ -14,7 +14,7 @@ class AuthAdapterState {
         this.jwtAccessSecret = context.params.JWT_SECRET_ACCESSTOKEN;
         this.jwtAccessTTL = context.params.JWT_ACCESS_TTL;
 
-        this.jwtForgotPasswordSecret = context.params.JWT_SECRET_FORGOTPASSWORDTOKEN;
+        this.jwtForgotPasswordPublic = context.params.JWT_SECRET_FORGOTPASSWORDTOKEN;
 
         this.hostname = process.env.AUTH_MS_BASE_URL;
         

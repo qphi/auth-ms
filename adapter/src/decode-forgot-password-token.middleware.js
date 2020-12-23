@@ -5,13 +5,18 @@ const STATUS_CODE = require('../../app/config/status-code.config');
 
 module.exports = (context) => {
     return async (request, response, next) => {
+        
         const forgotPasswordToken = request.query.token;
+        console.log('== decode token ==', forgotPasswordToken);
 
         try {
-            response.tokenPayload = await context.services.jwtVerifierService.verify(
+            const payload = await context.services.jwtVerifierService.verify(
                 forgotPasswordToken,
-                context.state.auth_ms.jwtForgotPasswordSecret
+                context.state.auth_ms.jwtForgotPasswordPublic
             );
+            console.log("decoced payload", payload)
+            request.tokenPayload = payload;
+            next();
         }
 
         catch(error) {
@@ -19,7 +24,7 @@ module.exports = (context) => {
                 error instanceof ExpiredTokenException ||
                 error instanceof TokenShouldBeRefreshedException
             ) {
-                return response.status(401).json({
+                response.status(401).json({
                     status: STATUS_CODE.PROCESS_ABORTED,
                     error: STATUS_CODE.NO_ERROR,
                     message: error.constructor.name
@@ -28,14 +33,12 @@ module.exports = (context) => {
 
             else {
                 console.error(error);
-                return response.status(500).json({
+                response.status(500).json({
                     status: STATUS_CODE.PROCESS_ABORTED,
                     error: STATUS_CODE.WITH_ERROR,
                     message: error.constructor.name
                 });
             }
         }
-
-        next();
     };
 }

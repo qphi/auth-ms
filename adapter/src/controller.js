@@ -136,13 +136,17 @@ class AuthenticatorMicroServiceController extends BaseController {
     }
 
     async onResetPassword(request, response) {
+        console.log('== Adapter == onResetPassword');
         const payload = request.tokenPayload;
         const password = request.body.password;
+        const confirmPassword = request.body.confirmPassword;
 
         console.log(payload, password);
         const result = await this.services.authenticator.resetPassword({
             target: payload.target,
-            created_at: payload.created_at
+            created_at: payload.created_at,
+            password,
+            confirmPassword
         });
 
         return response.sendStatus(200);

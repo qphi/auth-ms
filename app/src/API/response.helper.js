@@ -50,13 +50,13 @@ class ResponseHelper {
         this.removeRefreshToken(response, applicationSettings);
         this.removeIdentityToken(response, applicationSettings);
     }
-    // removeRefreshToken(response, applicationSettings) {
-    //     response.clearCookie(applicationSettings.COOKIE_JWT_ACCESS_NAME);
-    // }
+    removeRefreshToken(response, applicationSettings) {
+        // response.clearCookie(applicationSettings.COOKIE_JWT_ACCESS_NAME);
+    }
 
-    // removeIdentityToken(response, applicationSettings) {
-    //     response.clearCookie(applicationSettings.COOKIE_JWT_REFRESH_NAME);
-    // }
+    removeIdentityToken(response, applicationSettings) {
+        // response.clearCookie(applicationSettings.COOKIE_JWT_REFRESH_NAME);
+    }
 }
 
 module.exports = /** @type {ResponseHelper} */ Singleton.create(ResponseHelper);

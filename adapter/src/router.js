@@ -1,4 +1,4 @@
-const DecodeForgotPasswordToken = require('./decode-forgot-password-token.middleware');
+const DecodeForgotPasswordTokenFactory = require('./decode-forgot-password-token.middleware');
 const ConfirmPasswordConstraint = require('../../app/src/middlewares/confirmPassword.middleware');
 const EmailIsValid = require('../../app/src/middlewares/emailIsValid.constraint.middleware');
 const PasswordIsNotTooWeakConstraint = require('../../app/src/middlewares/passwordIsNotTooWeak.constraint.middleware');
@@ -7,6 +7,8 @@ const aPasswordIsGivenConstraint = require('../../app/src/middlewares/aPasswordI
 
 
 module.exports = ctx => {
+    const DecodeForgotPasswordToken = DecodeForgotPasswordTokenFactory(ctx);
+
     return [
         {
             method: 'post',

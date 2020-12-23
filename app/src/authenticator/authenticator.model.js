@@ -16,8 +16,6 @@ class AuthenticatorMicroService extends MicroService {
     constructor(settings = {}) {
         super(settings);
 
-
-
         // const container = require('../DependancyInjection');
         const container = this.loadContainer(settings.config);
 
@@ -79,7 +77,6 @@ class AuthenticatorMicroService extends MicroService {
 
         const credentials = {};
 
-    
         switch(db_type) {
             case DBHelper.DB_TYPE.DYNAMO:
                 credentials.accessKeyId = process.env.DYNAMO_ACCESS_KEY_ID

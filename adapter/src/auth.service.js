@@ -12,12 +12,16 @@ class AuthSPIService {
     async initialize() {
         const settings = await this.get(this.state.endpoints.retrieveSettings + this.state.api_key);
 
+        console.log('initialize with', settings);
         this.state.jwtRefreshName = settings.COOKIE_JWT_REFRESH_NAME;
         this.state.jwtResfreshSecret = settings.JWT_SECRET_REFRESHTOKEN;
      
         this.state.jwtAccessName = settings.COOKIE_JWT_ACCESS_NAME;
         this.state.jwtAccessSecret = settings.JWT_SECRET_ACCESSTOKEN;
         this.state.jwtAccessTTL = settings.JWT_ACCESS_TTL;
+        
+        this.state.jwtAccessTTL = settings.JWT_ACCESS_TTL;
+        this.state.jwtForgotPasswordPublic = settings.JWT_SECRET_FORGOTPASSWORDTOKEN;
     }
 
     /**

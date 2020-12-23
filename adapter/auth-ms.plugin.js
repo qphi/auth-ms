@@ -31,9 +31,9 @@ module.exports = context => {
         context.services.authService = new AuthSPIService(context);
     }
 
-    if (typeof context.params.authJwtSecretIdentityToken === 'undefined') {
-        context.services.authJwtSecretIdentityToken = process.env.AUTH_JWT_SECRET_IDENTITY_TOKEN;
-    }
+    // if (typeof context.params.authJwtSecretIdentityToken === 'undefined') {
+    //     context.services.authJwtSecretIdentityToken = process.env.AUTH_JWT_SECRET_IDENTITY_TOKEN;
+    // }
 
     if (typeof context.controllers.authenticatorController === 'undefined') {
         context.controllers.authenticatorController = new AuthenticatorMicroServiceController(context);
