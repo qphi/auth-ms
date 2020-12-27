@@ -12,7 +12,9 @@ module.exports = {
     params: {
         forgotPasswordTokenTTL: _6hoursInSeconds,
         refreshTokenTTL: _6hoursInSeconds,
-        DYNAMO_API_KEY_INDEX_NAME: process.env.DYNAMO_API_KEY_INDEX_NAME
+        DYNAMO_API_KEY_INDEX_NAME: process.env.DYNAMO_API_KEY_INDEX_NAME,
+        DYNAMO_TOKEN_TARGET_INDEX_NAME: process.env.DYNAMO_TOKEN_TARGET_INDEX_NAME,
+        DYNAMO_USER_FindByUUID_INDEX_NAME: process.env.DYNAMO_USER_FindByUUID_INDEX_NAME,
     },
 
     domain

@@ -149,7 +149,8 @@ class AuthenticatorMicroServiceController extends BaseController {
             confirmPassword
         });
 
-        return response.sendStatus(200);
+        console.log(result);
+        return response.status(result.status).json(result.data);
     }
 
     getResetPasswordURL(applicationSettings) {

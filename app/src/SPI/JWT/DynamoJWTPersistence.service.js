@@ -6,14 +6,16 @@ const _6hours = 21600000;
 const JWTSchema = ResourceSchema({
     namespace: 'auth-jwt',
     primaryKey: 'key',
-    schema: { 
-        kind: { type: String, required: true },
-        key: { type: String, required: true },
-        payload: { type: String, require: false },
-        expire: { type: Number, require: true }
+    schema: {
+        kind: {type: String, required: true},
+        key: {type: String, required: true},
+        payload: {type: String, require: false},
+        expire: {type: Number, require: true},
+        target: {type: String, require: false, default: ''}
     }
+
 });
-    
+
 
 const TOKEN_TYPE = {
     REFRESH: 'refresh',
@@ -26,6 +28,13 @@ const TOKEN_TYPE = {
  */
 class DynamoJWTPersistence extends DynamoProvider {
     constructor(context) {
+
+        JWTSchema.target.index = {
+            name: context.params.DYNAMO_TOKEN_TARGET_INDEX_NAME,
+            global: true
+        };
+
+        console.log('=========>',  context.params.DYNAMO_TOKEN_TARGET_INDEX_NAME)
         super(
             ResourceModelFactory.fromSchema(
                 context.entity.jwt,
@@ -42,6 +51,10 @@ class DynamoJWTPersistence extends DynamoProvider {
                 id: 'key'
             }
         );
+
+        this.index =  {
+            DYNAMO_TOKEN_TARGET_INDEX_NAME: context.params.DYNAMO_TOKEN_TARGET_INDEX_NAME
+        }
     }
 
      /**
@@ -94,7 +107,7 @@ class DynamoJWTPersistence extends DynamoProvider {
     }
 
     async getForgotPasswordToken(token) {
-        const tokenData = await this.findToken(token, TOKEN_TYPE.FORGOT);
+        const tokenData = await this.findTokenByTarget(token, TOKEN_TYPE.FORGOT);
         
         if (tokenData !== null) {
             return JSON.parse(tokenData.payload);
@@ -102,6 +115,20 @@ class DynamoJWTPersistence extends DynamoProvider {
 
         else {
             return {};
+        }
+    }
+
+    async findTokenByTarget(target, type) {
+        const result = await this.model.query('target').eq(target).using(this.index.DYNAMO_TOKEN_TARGET_INDEX_NAME).exec();
+
+        console.log('result', result);
+
+        if (result.count === 0) {
+            return null
+        }
+
+        else {
+            return result[0];
         }
     }
 

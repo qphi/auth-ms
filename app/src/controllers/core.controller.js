@@ -300,14 +300,17 @@ class CoreController extends BaseController {
         const target = request.body.target;
         const password = request.body.password;
 
-        console.log('== reset password ==', applicationSettings, forgotPasswordToken, password);
+        console.log('== reset password ==', applicationSettings, target, password);
 
         let payload = null;
 
         try {
-            const forgotPasswordToken = this.services.jwt.findForgotPasswordByTarget(target);
+            // retrieve jwt using idempotency-key called "target"
+            payload = await this.spi.jwtPersistence.getForgotPasswordToken(target);
 
-            if (forgotPasswordToken === null) {
+            console.log('payload', payload);
+
+            if (payload === null) {
                 return response.status(401).json({
                     error: STATUS_CODE.NO_ERROR,
                     status: STATUS_CODE.PROCESS_ABORTED,
@@ -316,20 +319,25 @@ class CoreController extends BaseController {
             }
 
             // decode token and verify token (exp and signature)
-            payload = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, applicationSettings);
-            
+            // note that this operation is free of charges, it only consume some CPU resources.
+            // payload = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, applicationSettings);
+
+            console.log('are the same ?', applicationSettings.MS_UUID, payload.application_uuid, request.applicationSettings);
+
             // check if application referred by API_KEY and application referred by forgotPasswordToken are the same
-            // (prevent malicious updates from anothers applications)
-            if (applicationSettings.application_uuid !== payload.application_uuid) {
+            // (prevent malicious updates from others applications)
+            if (applicationSettings.MS_UUID !== payload.application_uuid) {
                 return response.status(403).json({
                     error: STATUS_CODE.NO_ERROR,
                     status: STATUS_CODE.PROCESS_ABORTED,
-                    message: `${applicationSettings.API_KEY} is not allowed to perform this action`
+                    message: 'Your application is not authorized to perform this action',
+                    // message: `${applicationSettings.API_KEY} is not allowed to perform this action`
                 });
             }
         }
 
         catch(err) {
+            console.error(err);
             return response.status(401).json({
                 error: STATUS_CODE.NO_ERROR,
                 status: STATUS_CODE.PROCESS_ABORTED,
@@ -339,39 +347,50 @@ class CoreController extends BaseController {
     
         // check if payload was modified (compare content with an original persited version)
         // @todo use signature matching https://github.com/qphi/auth-ms/projects/2#card-51736418
-        const persistedPayload = await this.spi.jwtPersistence.getForgotPasswordToken(forgotPasswordToken);
-
-        if (persistedPayload === null) {
-            return response.status(401).json({
-                error: STATUS_CODE.NO_ERROR,
-                status: STATUS_CODE.PROCESS_ABORTED,
-                message: `Invalid token`
-            });
-        }
+        // const persistedPayload = await this.spi.jwtPersistence.getForgotPasswordToken(forgotPasswordToken);
+        //
+        // if (persistedPayload === null) {
+        //     return response.status(401).json({
+        //         error: STATUS_CODE.NO_ERROR,
+        //         status: STATUS_CODE.PROCESS_ABORTED,
+        //         message: `Invalid token`
+        //     });
+        // }
 
         
         // duplicate custom field added by jwt-lib
-        delete payload.iat;
-        delete payload.exp;
+        // delete payload.iat;
+        // delete payload.exp;
 
         // compare decoded content
-        if (JSON.stringify(payload) !== JSON.stringify(persistedPayload)) {
-            return response.status(401).json({
-                error: STATUS_CODE.NO_ERROR,
+        // if (JSON.stringify(payload) !== JSON.stringify(persistedPayload)) {
+        //     return response.status(401).json({
+        //         error: STATUS_CODE.NO_ERROR,
+        //         status: STATUS_CODE.PROCESS_ABORTED,
+        //         message: `Invalid token`
+        //     });
+        // }
+        //
+        // else {
+            // everything seems ok, just update the password
+        try {
+            const user_uuid = payload.user_uuid;
+            await this.spi.userPersistence.updatePassword(
+                user_uuid,
+                sha256(password),
+                applicationSettings
+            );
+        }
+
+        catch (error) {
+            return response.status(500).json({
+                error: STATUS_CODE.WITH_ERROR,
                 status: STATUS_CODE.PROCESS_ABORTED,
-                message: `Invalid token`
+                message: error.message
             });
         }
 
-        else {
-            // everything seems ok, just update the password
-            const user_uuid = persistedPayload.user_uuid;
-            await this.spi.userPersistence.updateUserPassword(
-                user_uuid, 
-                sha256(password), 
-                service
-            );
-        }
+        // }
         
         return response.sendStatus(200);
     }

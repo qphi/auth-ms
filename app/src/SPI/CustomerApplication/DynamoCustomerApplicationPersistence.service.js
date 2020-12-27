@@ -24,7 +24,8 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
            
             {
                 id: 'MS_UUID'
-            }
+            },
+
         );
 
         this.index =  {

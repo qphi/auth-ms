@@ -30,6 +30,8 @@ module.exports = (context) => {
                     }
                     
                     request.applicationSettings = applicationSettings;
+
+                    console.log(applicationSettings);
                     next();
                 }
             }
