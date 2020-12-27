@@ -112,7 +112,7 @@ class DynamoUserPersistence extends DynamoProvider {
 
     async updatePassword(uuid, newPassword, applicationSettings) {
         const user = await this.findByUUID(uuid, applicationSettings.MS_UUID);
-        // todo utiliser un index spécial OU changer utiliser l'email pour faire la requête
+
         return await this.model.update(
             // selector
             {

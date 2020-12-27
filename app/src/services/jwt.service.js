@@ -85,7 +85,7 @@ class JWTService {
      */
     forgeRefreshToken(payload, applicationSettings) {
         const forgotPasswordTTL = params.refreshTokenTTL;
-         const safeExpiration = Math.ceil((Date.now() / 1000)) + forgotPasswordTTL;
+        const safeExpiration = Math.ceil((Date.now() / 1000)) + forgotPasswordTTL;
         payload.expire = safeExpiration;
         return this.domain.jwt.sign(
             payload, 

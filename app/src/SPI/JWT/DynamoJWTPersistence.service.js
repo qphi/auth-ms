@@ -85,6 +85,7 @@ class DynamoJWTPersistence extends DynamoProvider {
         return await this.create({
             key: refreshToken,
             kind: TOKEN_TYPE.REFRESH,
+            target: refreshToken,
             payload: '',
             expire: Math.ceil((Date.now() + day_in_ms) / 1000)
         });
