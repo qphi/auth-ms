@@ -49,10 +49,8 @@ module.exports = (context) => {
             }
 
             else if (error instanceof TokenShouldBeRefreshedException) {
-                console.log("== TokenShouldBeRefreshedException ==");
                 const newIdentityToken = await context.services.authService.refresh(identityToken, refreshToken);
                 
-                console.log('new id', newIdentityToken);
                 if (newIdentityToken === null) {
                     await redirectToLogin(response);
                 }

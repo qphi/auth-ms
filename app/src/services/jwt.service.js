@@ -100,7 +100,6 @@ class JWTService {
      * @param {string} applicationSettings.JWT_SECRET_FORGOTPASSWORDTOKEN
      */
     forgeForgotPasswordToken(payload, applicationSettings = {JWT_SECRET_FORGOTPASSWORDTOKEN : ''}) {
-        console.log(applicationSettings)
         return this.domain.jwt.sign(
             payload, 
             applicationSettings.JWT_SECRET_FORGOTPASSWORDTOKEN

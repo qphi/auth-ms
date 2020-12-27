@@ -3,8 +3,6 @@ const STATUS_CODE = require('../../config/status-code.config');
 module.exports = (request, response, next) => {
     try {
         const { password, confirmPassword } = request.body;
-
-        console.log('== confirm password ... ==',  password, confirmPassword)
         
         if (typeof confirmPassword !== 'string') {
             return response.status(401).send({

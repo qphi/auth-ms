@@ -16,8 +16,6 @@ class JwtVerifierService {
             let payload = null;
             try {
                 payload = await jwt.verify(token, secret, options);
-            
-                console.log("payload ==", payload);
             }
 
             catch(error) {

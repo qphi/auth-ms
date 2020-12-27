@@ -7,14 +7,13 @@ module.exports = (context) => {
     return async (request, response, next) => {
         
         const forgotPasswordToken = request.query.token;
-        console.log('== decode token ==', forgotPasswordToken);
 
         try {
             const payload = await context.services.jwtVerifierService.verify(
                 forgotPasswordToken,
                 context.state.auth_ms.jwtForgotPasswordPublic
             );
-            console.log("decoced payload", payload)
+
             request.tokenPayload = payload;
             next();
         }

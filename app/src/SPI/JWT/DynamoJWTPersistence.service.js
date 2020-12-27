@@ -34,7 +34,8 @@ class DynamoJWTPersistence extends DynamoProvider {
             global: true
         };
 
-        console.log('=========>',  context.params.DYNAMO_TOKEN_TARGET_INDEX_NAME)
+        JWTSchema.key.hashKey = true;
+
         super(
             ResourceModelFactory.fromSchema(
                 context.entity.jwt,
@@ -107,11 +108,11 @@ class DynamoJWTPersistence extends DynamoProvider {
         });
     }
 
-    async getForgotPasswordToken(token) {
-        const tokenData = await this.findTokenByTarget(token, TOKEN_TYPE.FORGOT);
+    async getForgotPasswordToken(target) {
+        const tokenData = await this.findTokenByTarget(target, TOKEN_TYPE.FORGOT);
         
         if (tokenData !== null) {
-            return JSON.parse(tokenData.payload);
+            return tokenData;
         }
 
         else {
@@ -121,8 +122,6 @@ class DynamoJWTPersistence extends DynamoProvider {
 
     async findTokenByTarget(target, type) {
         const result = await this.model.query('target').eq(target).using(this.index.DYNAMO_TOKEN_TARGET_INDEX_NAME).exec();
-
-        console.log('result', result);
 
         if (result.count === 0) {
             return null

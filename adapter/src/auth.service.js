@@ -12,7 +12,6 @@ class AuthSPIService {
     async initialize() {
         const settings = await this.get(this.state.endpoints.retrieveSettings + this.state.api_key);
 
-        console.log('initialize with', settings);
         this.state.jwtRefreshName = settings.COOKIE_JWT_REFRESH_NAME;
         this.state.jwtResfreshSecret = settings.JWT_SECRET_REFRESHTOKEN;
      

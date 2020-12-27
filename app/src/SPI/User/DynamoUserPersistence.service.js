@@ -65,8 +65,6 @@ class DynamoUserPersistence extends DynamoProvider {
             'application_uuid': application_uuid
         }).using(this.index.DYNAMO_USER_FindByUUID_INDEX_NAME).exec();
 
-        console.log(result);
-
         if (result.count === 0) {
             return null
         }
@@ -86,8 +84,6 @@ class DynamoUserPersistence extends DynamoProvider {
             email,
             application_uuid: applicationSettings.MS_UUID
         });
-
-        console.log(user);
 
         return user.user_uuid;
     }

@@ -300,17 +300,16 @@ class CoreController extends BaseController {
         const target = request.body.target;
         const password = request.body.password;
 
-        console.log('== reset password ==', applicationSettings, target, password);
 
+        let token = null;
         let payload = null;
 
         try {
             // retrieve jwt using idempotency-key called "target"
-            payload = await this.spi.jwtPersistence.getForgotPasswordToken(target);
+            token = await this.spi.jwtPersistence.getForgotPasswordToken(target);
 
-            console.log('payload', payload);
 
-            if (payload === null) {
+            if (token === null) {
                 return response.status(401).json({
                     error: STATUS_CODE.NO_ERROR,
                     status: STATUS_CODE.PROCESS_ABORTED,
@@ -318,11 +317,12 @@ class CoreController extends BaseController {
                 });
             }
 
+            else {
+                payload = JSON.parse(token.payload);
+            }
             // decode token and verify token (exp and signature)
             // note that this operation is free of charges, it only consume some CPU resources.
             // payload = await this.services.jwt.verifyForgotPasswordToken(forgotPasswordToken, applicationSettings);
-
-            console.log('are the same ?', applicationSettings.MS_UUID, payload.application_uuid, request.applicationSettings);
 
             // check if application referred by API_KEY and application referred by forgotPasswordToken are the same
             // (prevent malicious updates from others applications)
@@ -380,6 +380,13 @@ class CoreController extends BaseController {
                 sha256(password),
                 applicationSettings
             );
+
+            try {
+                this.spi.jwtPersistence.deleteToken(token.key)
+            }
+            catch (error) {
+                console.error(error);
+            }
         }
 
         catch (error) {
