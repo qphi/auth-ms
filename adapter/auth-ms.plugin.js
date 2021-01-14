@@ -5,6 +5,7 @@ const AuthState = require("./src/auth-ms-adapter.state");
 const UserRequestHelper = require("../app/src/API/UserRequest.helper");
 const AuthSPIService = require("./src/auth.service");
 const AuthenticatorMicroServiceController = require('./src/controller');
+const HTTPSignatureVerifierService = require('../app/src/API/HTTPSignatureVerifier.service');
 
 module.exports = context => {
     if (typeof context.state.auth_ms === 'undefined') {
@@ -27,9 +28,14 @@ module.exports = context => {
         context.services.jwtVerifierService = new JwtVerifierService(context);
     }
 
+    if (typeof context.services.httpSignatureVerifier === 'undefined') {
+        context.services.httpSignatureVerifier = new HTTPSignatureVerifierService(context);
+    }
+
     if (typeof context.services.authService === 'undefined') {
         context.services.authService = new AuthSPIService(context);
     }
+
 
     // if (typeof context.params.authJwtSecretIdentityToken === 'undefined') {
     //     context.services.authJwtSecretIdentityToken = process.env.AUTH_JWT_SECRET_IDENTITY_TOKEN;

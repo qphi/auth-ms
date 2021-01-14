@@ -7,20 +7,23 @@ class AuthSPIService {
     constructor(context) {
         /** @type {AuthAdapterState} */
         this.state = context.state.auth_ms;
+        this.httpSignatureVerifierService = context.services.httpSignatureVerifier;
     }
 
     async initialize() {
-        const settings = await this.get(this.state.endpoints.retrieveSettings + this.state.api_key);
+        const authState = this.state;
+        authState.auth_public_key = await this.getPublicKey();
 
-        this.state.jwtRefreshName = settings.COOKIE_JWT_REFRESH_NAME;
-        this.state.jwtResfreshSecret = settings.JWT_SECRET_REFRESHTOKEN;
-     
-        this.state.jwtAccessName = settings.COOKIE_JWT_ACCESS_NAME;
-        this.state.jwtAccessSecret = settings.JWT_SECRET_ACCESSTOKEN;
-        this.state.jwtAccessTTL = settings.JWT_ACCESS_TTL;
-        
-        this.state.jwtAccessTTL = settings.JWT_ACCESS_TTL;
-        this.state.jwtForgotPasswordPublic = settings.JWT_SECRET_FORGOTPASSWORDTOKEN;
+        const settings = await this.get(authState.endpoints.retrieveSettings + authState.api_key);
+
+        authState.jwtRefreshName = settings.COOKIE_JWT_REFRESH_NAME;
+        authState.jwtResfreshSecret = settings.JWT_SECRET_REFRESHTOKEN;
+        authState.jwtAccessName = settings.COOKIE_JWT_ACCESS_NAME;
+        authState.jwtAccessSecret = settings.JWT_SECRET_ACCESSTOKEN;
+        authState.jwtAccessTTL = settings.JWT_ACCESS_TTL;
+        authState.jwtAccessTTL = settings.JWT_ACCESS_TTL;
+        authState.jwtForgotPasswordPublic = settings.JWT_SECRET_FORGOTPASSWORDTOKEN;
+
     }
 
     /**
@@ -72,7 +75,7 @@ class AuthSPIService {
         return this.post(this.state.endpoints.register, credentials);
     }
 
-    post(endpoint, payload) {
+    post(endpoint, payload, checkSignature = true) {
         payload.API_KEY = this.state.api_key;
         const payloadString = JSON.stringify(payload);
 
@@ -100,6 +103,10 @@ class AuthSPIService {
                     let parsedData = {};
 
                     try {
+                        if (checkSignature === true) {
+                            this.checkSignature(request);
+                        }
+
                         parsedData = JSON.parse(data);
                     }
 
@@ -123,7 +130,13 @@ class AuthSPIService {
         });
     }
 
-    get(endpoint) {
+    checkSignature(request) {
+        if (!this.httpSignatureVerifierService.verify(request, this.state.auth_public_key)) {
+            throw `Invalid HTTP Signature`;
+        }
+    }
+
+    get(endpoint, checkSignature = true) {
         return new Promise((resolve, reject) => {
             const request = http.request({
                 port: 3370,
@@ -141,6 +154,10 @@ class AuthSPIService {
                 });
 
                 response.on('end', () => {
+                    if (checkSignature === true) {
+                        this.checkSignature(request);
+                    }
+
                     resolve(JSON.parse(data));
                 });
             });
@@ -148,6 +165,12 @@ class AuthSPIService {
             request.on('error', reject);
             request.end();
         });
+    }
+
+    async getPublicKey() {
+        // does not check signature cause we don't have any key yet
+        const responseData = await this.get(this.state.endpoints.get_public_key, false);
+        return responseData.public_key;
     }
 
     forgotPassword(email) {

@@ -31,8 +31,18 @@ module.exports = ctx => {
             method: 'get',
             path: '/api/application/key/:api_key',
             middlewares: [],
-            
+
             action: ctx.controllers.application.getMethod('findByAPIKey')
+        },
+
+        {
+            method: 'get',
+            path: '/api/public-key',
+            middlewares: [],
+
+            action: (request, response) => {
+                ctx.controllers.core.getSignaturePublicKey(request, response, ctx.params.HTTPSignaturePublicKey);
+            }
         },
 
         {

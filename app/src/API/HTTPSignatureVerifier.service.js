@@ -5,16 +5,21 @@ class HTTPSignatureVerifierService {
       this.publicKey = null;
   }
 
-  verify(request) {
+  verify(request, key = null) {
       const parsedRequest = httpSignature.parseRequest(request);
-      return httpSignature.verifySignature(parsedRequest, this.publicKey);
+      return httpSignature.verifySignature(parsedRequest, key === null ? this.publicKey : key);
   }
 
-  async static create(settings = {}) {
+   static async create(settings = {}) {
       const service = new HTTPSignatureVerifierService(settings);
 
       if (typeof settings.publicKeyProvider === 'function') {
-          service.privateKey = await settings.publicKeyProvider();
+          service.publicKey = await settings.publicKeyProvider();
+      } else if (
+          typeof settings.publicKeyProvider !== 'undefined' &&
+          typeof settings.publicKeyProvider.provide === 'function'
+      ) {
+          service.publicKey = await settings.publicKeyProvider.provide();
       }
   }
 }

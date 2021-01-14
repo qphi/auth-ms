@@ -23,6 +23,10 @@ class ApplicationController extends BaseController {
             /** @type {CustomerApplicationPersistenceInterface} */
             customerApplicationPersistence: settings.spi.customerApplicationPersistence
         }
+
+        this.params = {
+            HTTPSignaturePublicKey: settings.params.HTTPSignaturePublicKey
+        };
     }
 
     async create(request, response) {

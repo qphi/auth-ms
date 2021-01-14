@@ -402,6 +402,12 @@ class CoreController extends BaseController {
         return response.sendStatus(200);
     }
 
+    getSignaturePublicKey(request, response, HTTPSignaturePublicKey) {
+        response.json({
+            public_key: HTTPSignaturePublicKey
+        });
+    }
+
     getResetPasswordURL(applicationSettings) {
         if (applicationSettings.FORGOT_PASSWORD_URL) {
             return applicationSettings.FORGOT_PASSWORD_URL;

@@ -30,10 +30,37 @@ module.exports = {
     },
 
     factory: {
+        params: {
+            HTTPSignaturePrivateKey: async context => {
+                const provider = context.provider.HTTPSignaturePrivateKey;
+                return await provider.provide();
+            },
+
+            HTTPSignaturePublicKey: async context => {
+                const provider = context.provider.HTTPSignaturePublicKey;
+                return await provider.provide();
+            }
+        },
+
         services: {
             jwt: context => {
                 const type = require('../src/services/jwt.service')
                 return new type(context);
+            },
+
+
+            HTTPSignatureSigner: async context => {
+                const Type = require('../src/services/HTTPSignatureSigner.service');
+                const instance = await Type.create({
+                    // secret: 'auth-ms-dev-private',
+                    key: context.params.HTTPSignaturePrivateKey,
+                    keyId: 'auth-ms-dev-private',
+                    //privateKeyProvider: context.provider.HTTPSignaturePrivateKey,
+                    // privateKeyProvider: context.params.HTTPSignaturePrivateKey,
+                    ...context
+                });
+
+               return instance;
             }
         },
 
@@ -53,6 +80,11 @@ module.exports = {
                 return new type(context);
             }
         }
+    },
+
+    provider: {
+        HTTPSignaturePrivateKey:  new (require('../src/Provider/HttpSignaturePrivateKey.provider'))(),
+        HTTPSignaturePublicKey:  new (require('../src/Provider/HttpSignaturePublicKey.provider'))(),
     },
 
     entity: {
