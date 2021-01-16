@@ -87,6 +87,7 @@ class AuthSPIService {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'AUTH-MS-API-KEY': this.state.api_key,
                     'Content-Length': payloadString.length
                 }
             },
@@ -104,7 +105,7 @@ class AuthSPIService {
 
                     try {
                         if (checkSignature === true) {
-                            this.checkSignature(request);
+                            this.checkSignature(response);
                         }
 
                         parsedData = JSON.parse(data);
@@ -142,7 +143,10 @@ class AuthSPIService {
                 port: 3370,
                 hostname: this.state.hostname,
                 path: endpoint,
-                method: 'GET'
+                method: 'GET',
+                headers: {
+                    'auth-ms-api-key': this.state.api_key
+                }
             },
             
             response => {
@@ -155,7 +159,7 @@ class AuthSPIService {
 
                 response.on('end', () => {
                     if (checkSignature === true) {
-                        this.checkSignature(request);
+                        this.checkSignature(response);
                     }
 
                     resolve(JSON.parse(data));

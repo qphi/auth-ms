@@ -5,6 +5,21 @@ const uuid = require('uuid');
 
 
 const STATUS_CODE = require('../../config/status-code.config');
+const assertions = {
+    'string-not-empty': value => typeof value === 'string' && value.length > 0
+}
+
+function check(assertion, value) {
+    const checker = assertions[assertion];
+
+    if (typeof checker !== 'function') {
+        return false;
+    }
+
+    else {
+        return checker(value);
+    }
+}
 
 const ApplicationNameIsNotAvailableException = require('../Exceptions/ApplicationNameIsNotAvailable.exception');
 const { STATUS_CODES } = require('http');
@@ -32,6 +47,12 @@ class ApplicationController extends BaseController {
     async create(request, response) {
         const name = request.body.name;
 
+        if (!check('string-not-empty', name)) {
+            return response.status(401).json({
+                message: 'missing attribute: name',
+                status: STATUS_CODE.PROCESS_ABORTED
+            })
+        }
        
         const SALT = crypto.randomBytes(16);
         const settings = {
@@ -46,7 +67,8 @@ class ApplicationController extends BaseController {
             API_KEY:  uuid.v5(name + SALT, process.env.MS_UUID),
             COOKIE_JWT_ACCESS_NAME: sha256(`jwt-${name}-access-cookie-${SALT}`), 
             COOKIE_JWT_REFRESH_NAME: sha256(`jwt-${name}-refresh-cookie-${SALT}`),
-            SALT: `${SALT}`
+            SALT: `${SALT}`,
+            host: request.body.host || request.headers.host
         }
 
         let status = null;
@@ -93,16 +115,29 @@ class ApplicationController extends BaseController {
         const results =  await this.spi.customerApplicationPersistence.list();
         return response.json(results);
     }
+
+    async setPublicKey(request, response) {
+        const application_uuid = request.params.ms_id;
+        const result = await this.spi.customerApplicationPersistence.updateById(application_uuid, {
+            public_key: response.body.public_key
+        });
+
+        return response.status(200).json({
+            status: STATUS_CODE.PROCESS_DONE,
+            error: STATUS_CODE.NO_ERROR,
+            message: STATUS_CODE.UPDATE_SUCCESS
+        });
+    }
     
     async findByAPIKey(request, response) {
-        const api_key = request.params.api_key;
-        const result = await this.spi.customerApplicationPersistence.findByAPIKey(api_key);
+        const { API_KEY } = request.applicationSettings;
+        const result = await this.spi.customerApplicationPersistence.findByAPIKey(API_KEY);
 
         return response.json(result); 
     }
 
     async findById(request, response) {
-        const application_uuid = request.params._id;
+        const application_uuid = request.params.ms_id;
         const result = await this.spi.customerApplicationPersistence.findById(application_uuid);
         
         return response.json(result); 
@@ -117,7 +152,7 @@ class ApplicationController extends BaseController {
     }
 
     async disableById(request, response) {
-        const application_uuid = request.params._id;
+        const application_uuid = request.params.ms_id;
         const result = await this.spi.customerApplicationPersistence.updateById(application_uuid, {
             enabled: false
         });
@@ -130,7 +165,7 @@ class ApplicationController extends BaseController {
     }
 
     async enableById(request, response) {
-        const application_uuid = request.params._id;
+        const application_uuid = request.params.ms_id;
         const result = await this.spi.customerApplicationPersistence.updateById(application_uuid, {
             enabled: true
         });
@@ -144,7 +179,7 @@ class ApplicationController extends BaseController {
 
 
     async updateById(request, response) {
-        const application_uuid = request.params._id;
+        const application_uuid = request.params.ms_id;
         const updates = request.body;
         let result = null;
         try {

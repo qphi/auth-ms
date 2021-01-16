@@ -4,7 +4,7 @@ module.exports = (context) => {
     return (
         async (request, response, next) => {
             try {
-                const API_KEY = request.body.API_KEY || request.query.API_KEY;
+                const API_KEY = request.headers['auth-ms-api-key'] || request.body.API_KEY || request.query.API_KEY;
 
                 if (typeof API_KEY === 'undefined') {
                     return response.status(401).send({

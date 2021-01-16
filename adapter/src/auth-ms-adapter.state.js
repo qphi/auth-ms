@@ -23,7 +23,7 @@ class AuthAdapterState {
             get_public_key: '/api/public-key',
             login: '/api/login',
             register: '/api/register',
-            retrieveSettings: '/api/application/key/',
+            retrieveSettings: '/api/application/',
             refresh: '/api/token/',
             forgotPassword: '/api/forgot-password',
             resetPassword: '/api/reset-password'

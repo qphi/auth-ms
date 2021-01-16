@@ -47,7 +47,17 @@ class DynamoCustomerApplicationPersistence extends DynamoProvider {
                 if (typeof exists !== 'undefined') {
                     throw new ApplicationNameIsNotAvailableException(settings.name);
                 }
-            }           
+
+                else {
+                    throw error;
+                }
+            }
+
+
+            else {
+
+                throw error;
+            }
         }
 
         return response;

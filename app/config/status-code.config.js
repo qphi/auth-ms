@@ -6,6 +6,9 @@ module.exports = {
     MISSING_EMAIL: 'missing email',
     MISSING_PASSWORD: 'missing password',
     MISSING_CONFIRM_PASSWORD: 'missing password',
+    INVALID_SIGNATURE: 'INVALID_SIGNATURE',
+    MISSING_HTTP_PUBLIC_KEY: 'MISSING_HTTP_PUBLIC_KEY',
+    MISSING_SIGNATURE: 'MISSING_SIGNATURE',
     MISSING_API_KEY: 'missing api key',
     
     NO_ERROR: false,
