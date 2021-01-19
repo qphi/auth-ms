@@ -14,7 +14,7 @@ module.exports = ResourceSchema({
         JWT_SECRET_REFRESHTOKEN: { type: String, required: true },
         JWT_SECRET_FORGOTPASSWORDTOKEN: { type: String, required: true },
 
-        public_key: { type: String, required: false, default: null },
+        signaturePublic: { type: String, required: false, default: null },
 
         MS_UUID: { type: String, required: true},
         API_KEY: { type: String, required: true },

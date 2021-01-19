@@ -14,7 +14,7 @@ module.exports = (context) => {
                 }
 
                 const authorization = request.headers['authorization'];
-                const public_key = applicationSettings.public_key;
+                const public_key = applicationSettings.signaturePublic;
                 const hasSignature = typeof authorization === 'string' && authorization.length > 0;
                 const hasPublicKey = typeof public_key === 'string' && public_key.length > 0;
 
