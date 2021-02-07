@@ -19,6 +19,8 @@ class JwtVerifierService {
             }
 
             catch(error) {
+                console.error(error);
+
                 if (error.name === 'TokenExpiredError') {
                     // overwrite lib-error by our own domain error
                     reject(new ExpiredTokenException());
@@ -30,7 +32,9 @@ class JwtVerifierService {
             }
 
             const nowInSeconds = Math.ceil(Date.now() / 1000);
-           
+
+            console .log("== payload ==", payload);
+
             if (options.ignorePreventExpiration !== true && payload.expire < nowInSeconds) {
                 reject(new TokenShouldBeRefreshedException());
             }

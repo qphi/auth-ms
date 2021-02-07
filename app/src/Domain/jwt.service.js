@@ -1,16 +1,17 @@
-const { Singleton } = require('micro');
+const {Singleton} = require('micro');
 const jwt = require('jsonwebtoken');
 const JwtVerifierService = require('./jwt-verifier.service');
+
 class JwtService extends JwtVerifierService {
     /**
-     * @param {Mixed} data 
-     * @param {string} secret 
-     * @param {Number} ttl 
+     * @param {Mixed} data
+     * @param {string} secret
+     * @param {Number} ttl
      */
     sign(data, secret, ttl) {
-        return jwt.sign(data, secret,         
-            ttl ? { expiresIn: ttl } : {}
-        );
+        const options = ttl ? {expiresIn: ttl} : {};
+        options.algorithm = 'RS256';
+        return jwt.sign(data, secret, options);
     }
 }
 

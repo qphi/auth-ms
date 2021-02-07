@@ -22,6 +22,7 @@ class AuthenticatorMicroService extends MicroService {
                 // db: new DBService(mock.service),
                 jwt: container.services.jwt,
                 HTTPSignatureSigner: container.services.HTTPSignatureSigner,
+                RSAKeyGenerator: container.services.RSAKeyGenerator,
                 mailer: nodemailer.createTransport({
                     host: 'smtp.mailtrap.io',
                     port: 2525,

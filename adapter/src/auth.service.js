@@ -14,16 +14,14 @@ class AuthSPIService {
         const authState = this.state;
         authState.auth_public_key = await this.getPublicKey();
 
-        const settings = await this.get(authState.endpoints.retrieveSettings + authState.api_key);
+        const settings = await this.get(authState.endpoints.retrieveSettings);
 
         authState.jwtRefreshName = settings.COOKIE_JWT_REFRESH_NAME;
-        authState.jwtResfreshSecret = settings.JWT_SECRET_REFRESHTOKEN;
+        // authState.jwtResfreshSecret = settings.JWT_PUBLIC_REFRESHTOKEN;
         authState.jwtAccessName = settings.COOKIE_JWT_ACCESS_NAME;
-        authState.jwtAccessSecret = settings.JWT_SECRET_ACCESSTOKEN;
+        authState.accessPublicKey = settings.JWT_PUBLIC_ACCESSTOKEN;
         authState.jwtAccessTTL = settings.JWT_ACCESS_TTL;
-        authState.jwtAccessTTL = settings.JWT_ACCESS_TTL;
-        authState.jwtForgotPasswordPublic = settings.JWT_SECRET_FORGOTPASSWORDTOKEN;
-
+        authState.forgotPasswordPublicKey = settings.JWT_PUBLIC_FORGOTPASSWORDTOKEN;
     }
 
     /**

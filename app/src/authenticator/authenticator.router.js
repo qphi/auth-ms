@@ -24,23 +24,32 @@ module.exports = ctx => {
     /////////////////////////////////////////////////////////////////////////
 
     const applicationRouter = ResourceRouter('application', ctx).filter(
-        route => route.path !== '/application'
+        route => !(route.path === '/application' && route.method === 'get')
     );
 
     applicationRouter.forEach(route => {
         route.path = route.path.replace(':_id', ':ms_id');
 
-
-        route.path = `/api${route.path}`;
         if (!Array.isArray(route.middlewares)) {
             route.middlewares = [];
         }
 
-        route.middlewares.push(
-            RetrieveServiceMiddleware,
-            checkHTTPSignature,
-            isGranted
-        );
+        if (route.path === '/application' && route.method === 'post') {
+            // @todo add security
+        }
+
+        else {
+
+
+            route.middlewares.push(
+                RetrieveServiceMiddleware,
+                checkHTTPSignature,
+                isGranted
+            );
+        }
+
+        route.path = `/api${route.path}`;
+
     });
 
     return (

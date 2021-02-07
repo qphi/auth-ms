@@ -24,7 +24,7 @@ module.exports = (context) => {
 
             const payload = await context.services.jwtVerifierService.verify(
                 identityToken, 
-                context.state.auth_ms.jwtAccessSecret, {
+                context.state.auth_ms.accessPublicKey, {
                     ignoreExpiration: true
                 }
             );
@@ -59,7 +59,7 @@ module.exports = (context) => {
                    try {
                     const payload = await context.services.jwtVerifierService.verify(
                         newIdentityToken, 
-                        context.state.auth_ms.jwtAccessSecret,
+                        context.state.auth_ms.accessPublicKey,
                         {
                             ignoreExpiration: true
                         }

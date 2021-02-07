@@ -122,7 +122,7 @@ class JWTService {
     verifyForgotPasswordToken(forgotPasswordToken, applicationSettings) {
        return this.verify(
             forgotPasswordToken,
-            applicationSettings.JWT_SECRET_FORGOTPASSWORDTOKEN
+            applicationSettings.JWT_PUBLIC_FORGOTPASSWORDTOKEN
         );  
     }
 

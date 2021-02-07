@@ -11,7 +11,7 @@ module.exports = (context) => {
         try {
             const payload = await context.services.jwtVerifierService.verify(
                 forgotPasswordToken,
-                context.state.auth_ms.jwtForgotPasswordPublic
+                context.state.auth_ms.forgotPasswordPublicKey
             );
 
             request.tokenPayload = payload;

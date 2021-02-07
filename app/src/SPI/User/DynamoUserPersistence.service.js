@@ -101,6 +101,7 @@ class DynamoUserPersistence extends DynamoProvider {
         }
 
         catch(error) {
+            console.error(error)
             throw new UserAlreadyExistsException();
         }
        

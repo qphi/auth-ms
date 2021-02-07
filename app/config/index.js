@@ -11,7 +11,9 @@ module.exports = {
         userNotification: new (require('../src/SPI/UserNotification.service'))()
     },
 
-    services: {},
+    services: {
+        RSAKeyGenerator: new (require('../src/services/rsa-key-generator.service'))()
+    },
 
     domain: {
         jwt: require('../src/Domain/jwt.service'),

@@ -43,6 +43,10 @@ class RequestHelper {
         return request.applicationSettings.JWT_SECRET_REFRESHTOKEN;
     }
 
+    getPublicRefreshTokenKey(request) {
+        return request.applicationSettings.JWT_PUBLIC_REFRESHTOKEN;
+    }
+
 }
 
 module.exports = /** @type {RequestHelper} */ Singleton.create(RequestHelper);

@@ -50,7 +50,7 @@ class CoreController extends BaseController {
     async generateIdentityToken(request, response) {
         try {
             const identityToken = this.api.requestAdapter.getIdentityToken(request);
-            const identityTokenSecret = request.applicationSettings.JWT_SECRET_ACCESSTOKEN;
+            const identityTokenSecret = request.applicationSettings.JWT_PUBLIC_ACCESSTOKEN;
             const identityPayload = await this.services.jwt.verify(identityToken, identityTokenSecret, {
                 ignoreExpiration: true,
                 ignorePreventExpiration: true
@@ -64,8 +64,8 @@ class CoreController extends BaseController {
             
 
             const refreshToken = await this.services.jwt.getRefreshToken(request);
-            const refreshTokenSecret = this.api.requestAdapter.getRefreshTokenSecret(request);
-            const refreshPayload = await this.services.jwt.verify(refreshToken, refreshTokenSecret);
+            const publicRefreshTokenKey = this.api.requestAdapter.getPublicRefreshTokenKey(request);
+            const refreshPayload = await this.services.jwt.verify(refreshToken, publicRefreshTokenKey);
             
             if (
                 (

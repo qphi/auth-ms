@@ -10,9 +10,15 @@ module.exports = ResourceSchema({
         img_src: {type: String, required: false, default: '' },
         useCustomForgotPassword: {type: Boolean, required: false, default: false },
         JWT_ACCESS_TTL: { type: Number, required: true},
+
         JWT_SECRET_ACCESSTOKEN: { type: String, required: true },
+        JWT_PUBLIC_ACCESSTOKEN: { type: String, required: true },
+
         JWT_SECRET_REFRESHTOKEN: { type: String, required: true },
+        JWT_PUBLIC_REFRESHTOKEN: { type: String, required: true },
+
         JWT_SECRET_FORGOTPASSWORDTOKEN: { type: String, required: true },
+        JWT_PUBLIC_FORGOTPASSWORDTOKEN: { type: String, required: true },
 
         signaturePublic: { type: String, required: false, default: null },
 

@@ -42,6 +42,10 @@ class ApplicationController extends BaseController {
         this.params = {
             HTTPSignaturePublicKey: settings.params.HTTPSignaturePublicKey
         };
+
+        this.services = {
+            RSAKeyGenerator: settings.services.RSAKeyGenerator
+        };
     }
 
     async create(request, response) {
@@ -55,21 +59,34 @@ class ApplicationController extends BaseController {
         }
        
         const SALT = crypto.randomBytes(16);
+        const accessKeys = this.services.RSAKeyGenerator.generate();
+        const refreshKeys = this.services.RSAKeyGenerator.generate();
+        const fortgotPasswordKeys = this.services.RSAKeyGenerator.generate();
+
         const settings = {
             name: name,
             icon_src: '',
 
             JWT_ACCESS_TTL: 180,
-            JWT_SECRET_ACCESSTOKEN: sha256(`jwt-${name}-access-token-${SALT}`), 
-            JWT_SECRET_REFRESHTOKEN: sha256(`jwt-${name}-refresh-token-${SALT}`), 
-            JWT_SECRET_FORGOTPASSWORDTOKEN: sha256(`jwt-${name}-forgotpassword-token-${SALT}`), 
+            // JWT_SECRET_ACCESSTOKEN: sha256(`jwt-${name}-access-token-${SALT}`),
+            JWT_SECRET_ACCESSTOKEN: accessKeys.privateKey,
+            JWT_PUBLIC_ACCESSTOKEN: accessKeys.publicKey,
+
+            // JWT_SECRET_REFRESHTOKEN: sha256(`jwt-${name}-refresh-token-${SALT}`),
+            JWT_SECRET_REFRESHTOKEN: refreshKeys.privateKey,
+            JWT_PUBLIC_REFRESHTOKEN: refreshKeys.publicKey,
+
+            // JWT_SECRET_FORGOTPASSWORDTOKEN: sha256(`jwt-${name}-forgotpassword-token-${SALT}`),
+            JWT_SECRET_FORGOTPASSWORDTOKEN: fortgotPasswordKeys.privateKey,
+            JWT_PUBLIC_FORGOTPASSWORDTOKEN: fortgotPasswordKeys.publicKey,
+
             MS_UUID: uuid.v5(name, process.env.MS_UUID),
             API_KEY:  uuid.v5(name + SALT, process.env.MS_UUID),
             COOKIE_JWT_ACCESS_NAME: sha256(`jwt-${name}-access-cookie-${SALT}`), 
             COOKIE_JWT_REFRESH_NAME: sha256(`jwt-${name}-refresh-cookie-${SALT}`),
             SALT: `${SALT}`,
             host: request.body.host || request.headers.host
-        }
+        };
 
         let status = null;
         let data = {
@@ -132,6 +149,8 @@ class ApplicationController extends BaseController {
     async findByAPIKey(request, response) {
         const { API_KEY } = request.applicationSettings;
         const result = await this.spi.customerApplicationPersistence.findByAPIKey(API_KEY);
+
+        console.info('Serve application detail for ' + API_KEY);
 
         return response.json(result); 
     }

@@ -101,13 +101,11 @@ class AuthenticatorMicroServiceController extends BaseController {
                 confirmPassword
             });
 
-            responseMessage = result.message;
-            if (responseMessage.user_id !== null) {
-                responseMessage.status = 'done';
-            }
+            responseMessage = result.data;
         }
 
         catch (error) {
+            console.error(error);
             if (error.name === 'UserAlreadyExistsException') {
                 status = 200;
                 responseMessage.message = 'An account using this email was found';
