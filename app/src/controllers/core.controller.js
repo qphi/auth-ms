@@ -1,26 +1,22 @@
 const { BaseController } = require('micro');
-const sha256 = require('sha256');
-const crypto = require('crypto');
-const uuid = require('uuid');
-
-const MissingRefreshTokenException = require('../Exceptions/MissingRefreshToken.exception');
-const InvalidTokenException = require('../Exceptions/InvalidToken.exception');
-const JsonWebTokenError = require('jsonwebtoken/lib/JsonWebTokenError');
-const UserPersistenceInterface = require('../SPI/User/UserPersistence.interface');
-const JWTPersistenceInterface = require('../SPI/JWT/JWTPersistence.interface');
-
-const STATUS_CODE = require('../../config/status-code.config');
-
+const { MissingRefreshTokenException, InvalidTokenException, STATUS_CODE } = require('auth-ms-sdk');
 const { params } = require('../dev.application-state');
-const ApplicationNameIsNotAvailableException = require('../Exceptions/ApplicationNameIsNotAvailable.exception');
-const { PROCESS_ABORTED } = require('../../config/status-code.config');
+
+const sha256 = require('sha256');
+const JsonWebTokenError = require('jsonwebtoken/lib/JsonWebTokenError');
 
 class CoreController extends BaseController {
-    constructor(settings = { services : {} }) {
+    /**
+     * @param {Object} settings
+     * @param {Object} settings.spi
+     * @param {Object} settings.api
+     * @param {Object} settings.services
+     */
+    constructor(settings = {}) {
         super(settings);
 
         this.api = {
-            requestAdapter: settings.api.requestAdapter || require('../API/request.helper'),
+            identityRequestHelper: settings.api.identityRequestHelper,
             /** @type {ResponseHelper} */
             responseHelper: settings.api.responseAdapter,
             /** @type {UserRequestHelper} */
@@ -32,7 +28,7 @@ class CoreController extends BaseController {
             jwtPersistence: settings.spi.jwtPersistence,
             /** @type {UserPersistenceInterface} */
             userPersistence: settings.spi.userPersistence,
-            /** @type {CustomerApplicationPersistenceInterface} */
+            /** @type {CustomerApplicationPersistence} */
             customerApplicationPersistence: settings.spi.customerApplicationPersistence,
 
             userNotification:  settings.spi.userNotification,
@@ -41,43 +37,45 @@ class CoreController extends BaseController {
         this.services.jwt = settings.services.jwt;
     }
 
-    
+    checkPayloadSanity(identityPayload, refreshPayload) {
+        if (
+            (
+                typeof identityPayload.user_id === 'string' &&
+                identityPayload.user_id.length > 10 &&
+                identityPayload.user_id === refreshPayload.user_id &&
+                typeof identityPayload.salt === 'string' &&
+                identityPayload.salt === refreshPayload.salt
+            ) !== true
+        ) {
+            throw new InvalidTokenException('try to refresh with an incorrect identity');
+        }
+    }
+
+    checkPayloadExpiration(identityPayload) {
+        const nowInSeconds = Math.ceil(Date.now() / 1000);
+        if (identityPayload.expire > nowInSeconds) {
+            throw new InvalidTokenException('This token is not expired !');
+        }
+    }
     /**
      * Forge an identity token. A valid refresh token must be providen
      * @param {Request} request 
-     * @param {Response} response 
+     * @param {Object} request.applicationSettings
+     * @param {Response} response
      */
     async generateIdentityToken(request, response) {
         try {
-            const identityToken = this.api.requestAdapter.getIdentityToken(request);
+            const identityToken = this.api.identityRequestHelper.getToken(request);
             const identityTokenSecret = request.applicationSettings.JWT_PUBLIC_ACCESSTOKEN;
             const identityPayload = await this.services.jwt.verify(identityToken, identityTokenSecret, {
                 ignoreExpiration: true,
                 ignorePreventExpiration: true
             });
-            
-            const nowInSeconds = Math.ceil(Date.now() / 1000);
-            
-            if (identityPayload.expire > nowInSeconds) {
-                throw new InvalidTokenException('This token is not expired !');
-            }
-            
 
-            const refreshToken = await this.services.jwt.getRefreshToken(request);
-            const publicRefreshTokenKey = this.api.requestAdapter.getPublicRefreshTokenKey(request);
-            const refreshPayload = await this.services.jwt.verify(refreshToken, publicRefreshTokenKey);
-            
-            if (
-                (
-                    typeof identityPayload.user_id === 'string' &&
-                    identityPayload.user_id.length > 10 &&
-                    identityPayload.user_id === refreshPayload.user_id &&
-                    typeof identityPayload.salt === 'string' &&
-                    identityPayload.salt === refreshPayload.salt
-                ) !== true 
-            ) {
-                throw new InvalidTokenException('try to refresh with an incorrect identity');
-            }
+            this.checkPayloadExpiration(identityPayload);
+
+            const refreshPayload = await this.services.refreshToken.getPayloadFromRequest(request);
+            this.checkPayloadSanity(identityPayload, refreshPayload);
             
             const userData = { 
                 user_id: refreshPayload.user_id,
@@ -408,15 +406,15 @@ class CoreController extends BaseController {
         });
     }
 
-    getResetPasswordURL(applicationSettings) {
-        if (applicationSettings.FORGOT_PASSWORD_URL) {
-            return applicationSettings.FORGOT_PASSWORD_URL;
-        }
-
-        else {
-            return process.env.FORGOT_PASSWORD_URL;
-        }
-    }
-};
+    // getResetPasswordURL(applicationSettings) {
+    //     if (applicationSettings.FORGOT_PASSWORD_URL) {
+    //         return applicationSettings.FORGOT_PASSWORD_URL;
+    //     }
+    //
+    //     else {
+    //         return process.env.FORGOT_PASSWORD_URL;
+    //     }
+    // }
+}
 
 module.exports = CoreController;

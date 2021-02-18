@@ -9,35 +9,40 @@ In the future, application using AuthWS should use a `.env` file like following 
 
 
 ## Setup your ENV
-Copy `./authenticator/.env-example` in `/.env` file. You probably should not rewrite all entry. `/.env` will contains your credentials, do not commit it. Add data to `./authenticator/.env-example` if you want to share any updates.
+Copy `/.env-example` in `/.env` or `/<dev | test>.env`' file. You probably should not rewrite all entry. `/.env` will contains your credentials, do not commit it. Add data to `./authenticator/.env-example` if you want to share any updates.
 
 # Env File example
 ```
 DB_TYPE=dynamo
-DYNAMO_ACCESS_KEY_ID=<AWS_ACCESS_KEY>
-DYNAMO_SECRET_KEY_ID=<AWS_SECRET_KEY>
+DYNAMO_ACCESS_KEY_ID=<YOUR_DYNAMO_ACCESS_KEY_ID>
+DYNAMO_SECRET_KEY_ID=<DYNAMO_SECRET_KEY_ID>
 DYNAMO_REGION=eu-west-3
-
 DYNAMO_API_KEY_INDEX_NAME=API_KEY-index
 DYNAMO_TOKEN_TARGET_INDEX_NAME=TOKEN_TARGET-index
 DYNAMO_USER_FindByUUID_INDEX_NAME=FindByUUID
 
 PORT=3370
 
-AUTH_MS_HOST=localhost:< insert your PORT HERE >
+AUTH_MS_HOST=localhost:3370
 
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 
-# <env> should be replaced by correct env between "dev, test, mock". Nothing means prod.
-USER_ENTITY=<dev>-auth-ms-user
-JWT_ENTITY=<dev>-auth-ms-jwt
-MS_RECORDED_ENTITY=<dev>-auth-ms-recorded
+USER_ENTITY=dev-auth-ms-user
+JWT_ENTITY=dev-auth-ms-jwt
+MS_RECORDED_ENTITY=dev-auth-ms-recorded
 MS_UUID=f04c1676-8a0f-5f05-b279-f0f8829c5e36
 ```
 
 ## Signature HTTP
-Le serveur utilise une signature HTTP, avec la configuration actuelle, il faut renseigner le couple clé publiques/privées dans le repertoire comme :
+Le serveur utilise une signature HTTP, avec la configuration actuelle :
+```
+cd ./app
+mkdir keys
+cd ./keys
+```
+
+Puis renseigner le couple clé publiques/privées comme :
 * `app/keys/auth-ms-dev-private.ppk`
 * `app/keys/auth-ms-dev-public`
 ## Run 

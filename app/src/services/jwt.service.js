@@ -1,7 +1,5 @@
-
-const InvalidTokenException = require('../Exceptions/InvalidToken.exception');
 const { params } = require('../dev.application-state');
-const MissingRefreshTokenException = require('../Exceptions/MissingRefreshToken.exception');
+const { MissingRefreshTokenException, InvalidTokenException } = require('auth-ms-sdk');
 const crypto = require('crypto');
 
 class JWTService {

@@ -1,6 +1,5 @@
+const { ExpiredTokenException, TokenShouldBeRefreshedException } = require('auth-ms-sdk');
 const jwt = require('jsonwebtoken');
-const ExpiredTokenException = require('../Exceptions/ExpiredToken.exception');
-const TokenShouldBeRefreshedException = require('../Exceptions/TokenShouldBeRefreshed.exception');
 
 class JwtVerifierService {
     /**

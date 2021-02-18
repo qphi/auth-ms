@@ -2,7 +2,7 @@ const { DynamoProvider, ResourceModelFactory } = require('rest-api');
 
 const ApplicationNameIsNotAvailableException = require('../../Exceptions/ApplicationNameIsNotAvailable.exception');
 /**
- * @implements {CustomerApplicationPersistenceInterface}
+ * @implements {CustomerApplicationPersistence}
  */
 
  // @todo move API_INDEX name to config parameter (loader with env var)

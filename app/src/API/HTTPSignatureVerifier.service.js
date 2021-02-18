@@ -1,16 +1,18 @@
 const httpSignature = require('http-signature');
 
 class HTTPSignatureVerifierService {
-  constructor(settings = {}) {
+  constructor() {
       this.publicKey = null;
   }
 
   verify(request, key = null) {
-      const parsedRequest = httpSignature.parseRequest(request);
+      const parsedRequest = httpSignature.parseRequest(request, undefined);
       return httpSignature.verifySignature(parsedRequest, key === null ? this.publicKey : key);
   }
 
-   static async create(settings = {}) {
+   static async create(settings = {
+       publicKeyProvider: undefined
+   }) {
       const service = new HTTPSignatureVerifierService(settings);
 
       if (typeof settings.publicKeyProvider === 'function') {

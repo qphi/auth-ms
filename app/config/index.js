@@ -2,9 +2,10 @@ const _6hours = 518400000;
 
 module.exports = {
     api: {
-        requestAdapter: require('../src/API/request.helper'),
+        identityRequestHelper: new (require('../src/API/identity-token-request.helper'))(),
         responseAdapter: require('../src/API/response.helper'),
-        userRequestAdapter: require('../src/API/UserRequest.helper')
+        userRequestAdapter: require('../src/API/UserRequest.helper'),
+        refreshRequestHelper: require('../src/API/refresh-token-request.helper')
     },
     
     spi: {
@@ -46,7 +47,12 @@ module.exports = {
 
         services: {
             jwt: context => {
-                const type = require('../src/services/jwt.service')
+                const type = require('../src/services/jwt.service');
+                return new type(context);
+            },
+
+            refreshToken: context => {
+                const type = require('../src/services/refresh-token.service');
                 return new type(context);
             },
 
@@ -65,6 +71,7 @@ module.exports = {
                return instance;
             }
         },
+
 
         spi: {
             userPersistence: context => {

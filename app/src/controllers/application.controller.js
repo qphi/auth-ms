@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const uuid = require('uuid');
 
 
-const STATUS_CODE = require('../../config/status-code.config');
+const { STATUS_CODE } = require('auth-ms-sdk');
 const assertions = {
     'string-not-empty': value => typeof value === 'string' && value.length > 0
 }
@@ -25,17 +25,29 @@ const ApplicationNameIsNotAvailableException = require('../Exceptions/Applicatio
 const { STATUS_CODES } = require('http');
 
 class ApplicationController extends BaseController {
-    constructor(settings = { services : {} }) {
+    /**
+     *
+     * @param {Object} settings
+     * @param {Object} settings.services
+     * @param {Object} settings.services.RSAKeyGenerator
+     * @param {Object} settings.api
+     * @param {ResponseHelper} settings.api.responseAdapter
+     * @param {Object} settings.spi
+     * @param {CustomerApplicationPersistence} settings.spi.customerApplicationPersistence
+     * @param {Object} settings.params
+     * @param {string} settings.params.HTTPSignaturePublicKey
+     */
+    constructor(settings = {}) {
         super(settings);
 
         this.api = {
-            requestAdapter: settings.api.requestAdapter || require('../API/request.helper'),
+            requestAdapter: settings.api.requestAdapter,
             /** @type {ResponseHelper} */
             responseHelper: settings.api.responseAdapter
         };
 
         this.spi = {
-            /** @type {CustomerApplicationPersistenceInterface} */
+            /** @type {CustomerApplicationPersistence} */
             customerApplicationPersistence: settings.spi.customerApplicationPersistence
         }
 
@@ -88,7 +100,7 @@ class ApplicationController extends BaseController {
             host: request.body.host || request.headers.host
         };
 
-        let status = null;
+        let status;
         let data = {
             error: STATUS_CODE.NO_ERROR,
             status: STATUS_CODE.PROCESS_DONE
@@ -123,9 +135,8 @@ class ApplicationController extends BaseController {
             }
         }
 
-        finally {
-            return response.status(status).json(data);
-        }
+
+        return response.status(status).json(data);
     }
 
     async list(request, response) {
@@ -135,7 +146,7 @@ class ApplicationController extends BaseController {
 
     async setPublicKey(request, response) {
         const application_uuid = request.params.ms_id;
-        const result = await this.spi.customerApplicationPersistence.updateById(application_uuid, {
+        await this.spi.customerApplicationPersistence.updateById(application_uuid, {
             public_key: response.body.public_key
         });
 
@@ -155,6 +166,12 @@ class ApplicationController extends BaseController {
         return response.json(result); 
     }
 
+    /**
+     * @param {Request} request
+     * @param {string} request.params.ms_id
+     * @param response
+     * @returns {Promise<*>}
+     */
     async findById(request, response) {
         const application_uuid = request.params.ms_id;
         const result = await this.spi.customerApplicationPersistence.findById(application_uuid);
@@ -172,7 +189,7 @@ class ApplicationController extends BaseController {
 
     async disableById(request, response) {
         const application_uuid = request.params.ms_id;
-        const result = await this.spi.customerApplicationPersistence.updateById(application_uuid, {
+        await this.spi.customerApplicationPersistence.updateById(application_uuid, {
             enabled: false
         });
 
@@ -185,7 +202,7 @@ class ApplicationController extends BaseController {
 
     async enableById(request, response) {
         const application_uuid = request.params.ms_id;
-        const result = await this.spi.customerApplicationPersistence.updateById(application_uuid, {
+        await this.spi.customerApplicationPersistence.updateById(application_uuid, {
             enabled: true
         });
 
@@ -200,9 +217,8 @@ class ApplicationController extends BaseController {
     async updateById(request, response) {
         const application_uuid = request.params.ms_id;
         const updates = request.body;
-        let result = null;
         try {
-            result = await this.spi.customerApplicationPersistence.updateById(application_uuid, updates);
+            await this.spi.customerApplicationPersistence.updateById(application_uuid, updates);
         }
 
         catch (error) {
@@ -231,6 +247,6 @@ class ApplicationController extends BaseController {
             message: STATUS_CODE.UPDATE_SUCCESS
         });
     }
-};
+}
 
 module.exports = ApplicationController;

@@ -10,8 +10,7 @@ let chaiHttp = require('chai-http');
 let server = require('../app');
 const purgeDB = require('./purge-db.command');
 
-
-const STATUS_CODE = require('../app/config/status-code.config');
+const { STATUS_CODE } = require('auth-ms-sdk');
 
 const users = require('./fixtures/register.fixture');
 

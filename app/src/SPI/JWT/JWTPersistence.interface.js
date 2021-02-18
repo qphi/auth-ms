@@ -15,26 +15,26 @@ class JWTPersistenceInterface {
      * @param {string} refreshToken 
      */
     hasRefreshToken(refreshToken = '') {
-        throw new AbstractMethodNotImplementedException(arguments.callee.toString());
+        throw new AbstractMethodNotImplementedException();
     }
 
     /**
      * @param {string} refreshToken 
      */
     storeRefreshToken(refreshToken = '') {
-        throw new AbstractMethodNotImplementedException(arguments.callee.toString());
+        throw new AbstractMethodNotImplementedException();
     }
 
     storeForgotPasswordToken(token, data) {
-        throw new AbstractMethodNotImplementedException(arguments.callee.toString());
+        throw new AbstractMethodNotImplementedException();
     }
 
     getForgotPasswordToken(token) {
-        throw new AbstractMethodNotImplementedException(arguments.callee.toString());
+        throw new AbstractMethodNotImplementedException();
     }
 
     deleteToken(refreshToken) {
-        throw new AbstractMethodNotImplementedException(arguments.callee.toString());
+        throw new AbstractMethodNotImplementedException();
     }
 }
 

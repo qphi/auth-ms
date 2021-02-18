@@ -1,4 +1,4 @@
-const STATUS_CODE = require('../../config/status-code.config');
+const { STATUS_CODE } = require('auth-ms-sdk');
 
 module.exports = (context) => {
     return (

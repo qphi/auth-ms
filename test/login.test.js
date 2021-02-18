@@ -9,7 +9,7 @@ const assert = chai.assert;
 let chaiHttp = require('chai-http');
 let server = require('../app');
 
-const STATUS_CODE = require('../app/config/status-code.config');
+const { STATUS_CODE } = require('auth-ms-sdk');
 
 const fixtures = require('./fixtures/login.fixture');
 const purgeDB = require('./purge-db.command');

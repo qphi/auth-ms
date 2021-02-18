@@ -1,4 +1,4 @@
-const AuthenticatorMicroService = require('./src/authenticator/authenticator.model');
+const AuthenticatorMicroService = require('./src/server');
 const path = require('path');
 
 const run_env = process.env.NODE_ENV || 'prod';

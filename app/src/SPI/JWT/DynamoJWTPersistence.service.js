@@ -1,7 +1,6 @@
 const { DynamoProvider, ResourceModelFactory, ResourceSchema } = require('rest-api');
 
 const day_in_ms = 86400000;
-const _6hours = 21600000;
 
 const JWTSchema = ResourceSchema({
     namespace: 'auth-jwt',
