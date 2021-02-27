@@ -1,6 +1,6 @@
 const {Singleton} = require('micro');
 const jwt = require('jsonwebtoken');
-const JwtVerifierService = require('./jwt-verifier.service');
+const { JwtVerifierService } = require('auth-ms-sdk');
 
 class JwtService extends JwtVerifierService {
     /**

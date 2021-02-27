@@ -1,10 +1,12 @@
 const _6hours = 518400000;
+const { UserRequestHandler } = require('auth-ms-sdk');
+const { HTTPSignatureSignerService } = require('micro');
 
 module.exports = {
     api: {
         identityRequestHelper: new (require('../src/API/identity-token-request.helper'))(),
         responseAdapter: require('../src/API/response.helper'),
-        userRequestAdapter: require('../src/API/UserRequest.helper'),
+        userRequestAdapter: new UserRequestHandler(),
         refreshRequestHelper: require('../src/API/refresh-token-request.helper')
     },
     
@@ -58,8 +60,7 @@ module.exports = {
 
 
             HTTPSignatureSigner: async context => {
-                const Type = require('../src/services/HTTPSignatureSigner.service');
-                const instance = await Type.create({
+                const instance = await HTTPSignatureSignerService.create({
                     // secret: 'auth-ms-dev-private',
                     key: context.params.HTTPSignaturePrivateKey,
                     keyId: 'auth-ms-dev-private',
